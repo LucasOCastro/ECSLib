@@ -1,8 +1,13 @@
-﻿namespace ECSLib;
+﻿namespace ECSLib.Entities;
 
-public struct Entity: IEquatable<Entity>
+public readonly struct Entity: IEquatable<Entity>
 {
     public int ID { get; }
+
+    public Entity(int id)
+    {
+        ID = id;
+    }
     
     public bool Equals(Entity other) => ID == other.ID;
 

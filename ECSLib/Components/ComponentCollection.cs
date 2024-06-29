@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using ECSLib.Entities;
 using ECSLib.Exceptions;
 
 namespace ECSLib.Components;

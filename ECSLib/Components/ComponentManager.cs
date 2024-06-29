@@ -1,4 +1,6 @@
-﻿namespace ECSLib.Components;
+﻿using ECSLib.Entities;
+
+namespace ECSLib.Components;
 
 public class ComponentManager
 {
