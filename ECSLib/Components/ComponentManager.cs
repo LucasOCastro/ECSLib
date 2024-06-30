@@ -1,4 +1,5 @@
 ﻿using ECSLib.Entities;
+using ECSLib.Extensions;
 
 namespace ECSLib.Components;
 
@@ -6,16 +7,8 @@ public class ComponentManager
 {
     private readonly Dictionary<Type, ComponentCollection> _collections = new();
 
-    private ComponentCollection GetCollection(Type type)
-    {
-        if (!_collections.TryGetValue(type, out var collection))
-        {
-            collection = new(type);
-            _collections.Add(type, collection);
-        }
-        return collection;
-    }
-
+    private ComponentCollection GetCollection(Type type) => _collections.GetOrAdd(type, () => new(type));
+    
     private ComponentCollection GetCollection<TComponent>() => GetCollection(typeof(TComponent));
 
     /// <inheritdoc cref="ComponentCollection.Get{TComponent}"/>
