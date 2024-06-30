@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
+using ECSLib.Components.Exceptions;
 using ECSLib.Entities;
-using ECSLib.Exceptions;
 
 namespace ECSLib.Components;
 

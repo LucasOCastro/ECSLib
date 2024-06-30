@@ -1,4 +1,6 @@
-﻿namespace ECSLib.Exceptions;
+﻿using ECSLib.Entities;
+
+namespace ECSLib.Components.Exceptions;
 
 public class MissingComponentException : Exception
 {
