@@ -23,12 +23,11 @@ internal class ComponentCollection
         _componentSize = Marshal.SizeOf(_componentType);
     }
 
-    private Span<TComponent> GetSpanAt<TComponent>(int index) where TComponent : struct
-    {
-        Span<byte> span = new(_components, index, _componentSize);
-        return MemoryMarshal.Cast<byte, TComponent>(span);
-    }
-    
+    private Span<byte> GetByteSpanAt(int index) => new(_components, index, _componentSize);
+
+    private Span<TComponent> GetSpanAt<TComponent>(int index) where TComponent : struct =>
+        MemoryMarshal.Cast<byte, TComponent>(GetByteSpanAt(index));
+
     /// <returns>
     /// A reference to the component.
     /// Do not store this reference, or it will be outdated when the collection updates.
@@ -70,29 +69,29 @@ internal class ComponentCollection
     /// Removes the component associated with the entity..
     /// </summary>
     /// <exception cref="MissingComponentException">Thrown if the entity does not have the component.</exception>
-    public void Unregister<TComponent>(Entity entity) where TComponent : struct
+    public void Unregister(Entity entity)
     {
         if (!_entityToCompIndex.TryGetValue(entity, out int compIndex))
         {
-            throw new MissingComponentException(typeof(TComponent), entity);
+            throw new MissingComponentException(_componentType, entity);
         }
         
         _entityToCompIndex.Remove(entity);
         _compIndexToEntity.Remove(compIndex);
-        FillPosition<TComponent>(compIndex);
+        FillPosition(compIndex);
         Count--;
     }
 
     /// <summary>
     /// Moves an element from the end of the component array to the empty index, ensuring it is packed.
     /// </summary>
-    private void FillPosition<TComponent>(int emptyCompIndex) where TComponent : struct
+    private void FillPosition(int emptyCompIndex)
     {
         // If the empty position is at the end of the array, we do not need to fill it up, just clear that specific position.
         int lastCompIndex = Count - 1;
         if (emptyCompIndex == lastCompIndex)
         {
-            GetSpanAt<TComponent>(emptyCompIndex).Clear();
+            GetByteSpanAt(emptyCompIndex).Clear();
             return;
         }
         
@@ -104,8 +103,8 @@ internal class ComponentCollection
         _entityToCompIndex[lastEntity] = emptyCompIndex;
 
         // Actually perform the update and clear the position which was now left empty.
-        GetSpanAt<TComponent>(lastCompIndex).CopyTo(GetSpanAt<TComponent>(emptyCompIndex));
-        GetSpanAt<TComponent>(lastCompIndex).Clear();
+        GetByteSpanAt(lastCompIndex).CopyTo(GetByteSpanAt(emptyCompIndex));
+        GetByteSpanAt(lastCompIndex).Clear();
     }
 
     /// <summary>

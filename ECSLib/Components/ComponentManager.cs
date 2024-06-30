@@ -16,17 +16,10 @@ public class ComponentManager
         ref GetCollection<TComponent>().Get<TComponent>(entity);
 
     /// <summary>
-    /// Adds a component to an Entity using its default constructor.
+    /// Adds a component to an Entity. Uses default constructor by default.
     /// </summary>
     /// <inheritdoc cref="ComponentCollection.Register{TComponent}"/>
-    public void AddComponent<TComponent>(Entity entity) where TComponent : struct =>
-        GetCollection<TComponent>().Register(entity, new TComponent());
-    
-    /// <summary>
-    /// Adds a component to an Entity.
-    /// </summary>
-    /// <inheritdoc cref="ComponentCollection.Register{TComponent}"/>
-    public void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : struct =>
+    public void AddComponent<TComponent>(Entity entity, TComponent component = default) where TComponent : struct =>
         GetCollection<TComponent>().Register(entity, component);
 
     /// <summary>
@@ -34,5 +27,9 @@ public class ComponentManager
     /// </summary>
     /// <inheritdoc cref="ComponentCollection.Unregister{TComponent}"/>
     public void RemoveComponent<TComponent>(Entity entity) where TComponent : struct =>
-        GetCollection<TComponent>().Unregister<TComponent>(entity);
+        GetCollection<TComponent>().Unregister(entity);
+
+    /// <inheritdoc cref="RemoveComponent{TComponent}"/>
+    public void RemoveComponent(Entity entity, Type componentType) => 
+        GetCollection(componentType).Unregister(entity);
 }
