@@ -12,8 +12,8 @@ internal class ComponentCollection
     public int Count { get; private set; }
     
     private byte[] _components = new byte[ArrayLengthIncrement];
-    private readonly Dictionary<int, int> _entityIdToCompIndex = new();
-    private readonly Dictionary<int, int> _compIndexToEntityId = new();
+    private readonly Dictionary<Entity, int> _entityToCompIndex = new();
+    private readonly Dictionary<int, Entity> _compIndexToEntity = new();
 
     private readonly Type _componentType;
     private readonly int _componentSize;
@@ -36,7 +36,7 @@ internal class ComponentCollection
     /// <exception cref="MissingComponentException">Thrown if the entity does not have the component.</exception>
     public ref TComponent Get<TComponent>(Entity entity) where TComponent : struct
     {
-        if (!_entityIdToCompIndex.TryGetValue(entity.ID, out int index))
+        if (!_entityToCompIndex.TryGetValue(entity, out int index))
         {
             throw new MissingComponentException(_componentType, entity);
         }
@@ -49,7 +49,7 @@ internal class ComponentCollection
     /// <exception cref="DuplicatedComponentException">Thrown if the entity already has the component.</exception>
     public void Register<TComponent>(Entity entity, TComponent component) where TComponent : struct
     {
-        if (_entityIdToCompIndex.ContainsKey(entity.ID))
+        if (_entityToCompIndex.ContainsKey(entity))
         {
             throw new DuplicatedComponentException(_componentType, entity);
         }
@@ -60,8 +60,8 @@ internal class ComponentCollection
         }
 
         // Adds the component after the last component in the array.
-        _entityIdToCompIndex.Add(entity.ID, Count);
-        _compIndexToEntityId.Add(Count, entity.ID);
+        _entityToCompIndex.Add(entity, Count);
+        _compIndexToEntity.Add(Count, entity);
         GetSpanAt<TComponent>(Count).Fill(component);
         Count++;
     }
@@ -72,13 +72,13 @@ internal class ComponentCollection
     /// <exception cref="MissingComponentException">Thrown if the entity does not have the component.</exception>
     public void Unregister<TComponent>(Entity entity) where TComponent : struct
     {
-        if (!_entityIdToCompIndex.TryGetValue(entity.ID, out int compIndex))
+        if (!_entityToCompIndex.TryGetValue(entity, out int compIndex))
         {
             throw new MissingComponentException(typeof(TComponent), entity);
         }
         
-        _entityIdToCompIndex.Remove(entity.ID);
-        _compIndexToEntityId.Remove(compIndex);
+        _entityToCompIndex.Remove(entity);
+        _compIndexToEntity.Remove(compIndex);
         FillPosition<TComponent>(compIndex);
         Count--;
     }
@@ -97,11 +97,11 @@ internal class ComponentCollection
         }
         
         // There is no entity associated with the last index anymore, so remove it.
-        _compIndexToEntityId.Remove(lastCompIndex);
+        _compIndexToEntity.Remove(lastCompIndex);
         
         // The position of the last entity's component was changed to the emptyCompIndex, so update it.
-        int lastEntityId = _compIndexToEntityId[Count - 1];
-        _entityIdToCompIndex[lastEntityId] = emptyCompIndex;
+        var lastEntity = _compIndexToEntity[Count - 1];
+        _entityToCompIndex[lastEntity] = emptyCompIndex;
 
         // Actually perform the update and clear the position which was now left empty.
         GetSpanAt<TComponent>(lastCompIndex).CopyTo(GetSpanAt<TComponent>(emptyCompIndex));
