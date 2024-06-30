@@ -28,14 +28,14 @@ public class ECS
     /// <inheritdoc cref="ComponentManager.AddComponent{TComponent}"/>
     public void AddComponent<TComponent>(Entity entity, TComponent component = default) where TComponent : struct
     {
-        _archetypeManager.BeforeComponentAddedTo(typeof(TComponent), entity);
+        _archetypeManager.BeforeComponentAddedTo(entity, typeof(TComponent));
         _componentManager.AddComponent(entity, component);
     }
     
     /// <inheritdoc cref="ComponentManager.RemoveComponent{TComponent}"/>
     public void RemoveComponent<TComponent>(Entity entity) where TComponent : struct
     {
-        _archetypeManager.BeforeComponentRemovedFrom(typeof(TComponent), entity);
+        _archetypeManager.BeforeComponentRemovedFrom(entity, typeof(TComponent));
         _componentManager.RemoveComponent<TComponent>(entity);
     }
 

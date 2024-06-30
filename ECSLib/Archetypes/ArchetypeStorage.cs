@@ -9,10 +9,11 @@ internal class ArchetypeStorage
     private readonly Dictionary<Type, HashSet<int>> _componentTypeToArchetypeIndices = new();
 
     /// <returns>Every component type registered in the archetype with the queried id.</returns>
-    public IReadOnlySet<Type> GetAllComponentsInArchetype(int id)
-    {
-        return _archetypes[id].Components;
-    }
+    /// <exception cref="IndexOutOfRangeException">Thrown if <see cref="id"/> is not a valid registered id.</exception>
+    public IReadOnlySet<Type> GetAllComponentsInArchetype(int id) =>
+        id >= 0 && id < _archetypes.Count
+            ? _archetypes[id].Components
+            : throw new IndexOutOfRangeException($"{nameof(id)} of value {id} is not registered in {nameof(ArchetypeStorage)}");
 
     /// <summary>
     /// If an archetype is already registered for this collection of types, retrieve its id.
@@ -38,47 +39,23 @@ internal class ArchetypeStorage
         return index;
     }
     
-    #region GETTERS
-
     /// <returns>
     /// All archetype ids which contain the componentType.
     /// </returns>
-    public IEnumerable<int> GetArchetypesWith(Type componentType)
-    {
-        if (!_componentTypeToArchetypeIndices.TryGetValue(componentType, out var indices))
-        {
-            yield break;
-        }
+    public IReadOnlySet<int> GetArchetypesWith(Type componentType) =>
+        _componentTypeToArchetypeIndices.TryGetValue(componentType, out var indices)
+            ? indices
+            : new();
 
-        foreach (int index in indices)
-        {
-            yield return index;
-        }
-    }
-    
     /// <returns>
     /// All archetype ids which contain all of the componentTypes, and more.
     /// </returns>
-    public IEnumerable<int> GetArchetypesWithAll(IEnumerable<Type> componentTypes)
-    {
-        var indices = componentTypes.Select(t => _componentTypeToArchetypeIndices[t]).Intersection();
-        foreach (int index in indices)
-        {
-            yield return index;
-        }
-    }
-    
+    public IReadOnlySet<int> GetArchetypesWithAll(IEnumerable<Type> componentTypes) =>
+        componentTypes.Select(GetArchetypesWith).Intersection();
+
     /// <returns>
     /// All archetype ids which contain at least one type from componentTypes.
     /// </returns>
-    public IEnumerable<int> GetArchetypesWithAny(IEnumerable<Type> componentTypes)
-    {
-        var indices = componentTypes.Select(t => _componentTypeToArchetypeIndices[t]).Union();
-        foreach (int index in indices)
-        {
-            yield return index;
-        }
-    }
-
-    #endregion
+    public IReadOnlySet<int> GetArchetypesWithAny(IEnumerable<Type> componentTypes) =>
+        componentTypes.Select(GetArchetypesWith).Union();
 }
