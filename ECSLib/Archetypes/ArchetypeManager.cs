@@ -35,7 +35,7 @@ internal class ArchetypeManager
     /// <summary>
     /// Changes an entity's currently registered archetype to the one defined by the new components.
     /// </summary>
-    private void ArchetypeUpdate(Entity entity, IEnumerable<Type> newComponents)
+    private void ArchetypeUpdate(Entity entity, IReadOnlySet<Type> newComponents)
     {
         var newArchetype = _storage.GetOrCreateArchetype(newComponents);
         _entityToArchetype[entity] = newArchetype;
@@ -47,7 +47,7 @@ internal class ArchetypeManager
     public void BeforeComponentAddedTo(Entity entity, Type componentType)
     {
         var oldArchetype = _entityToArchetype[entity];
-        var newComponents = _storage.GetAllComponentsInArchetype(oldArchetype).Append(componentType);
+        var newComponents = _storage.GetAllComponentsInArchetype(oldArchetype).Include(componentType);
         ArchetypeUpdate(entity, newComponents);
     }
 

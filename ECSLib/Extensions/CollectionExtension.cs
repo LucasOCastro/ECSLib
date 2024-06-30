@@ -1,11 +1,13 @@
-﻿namespace ECSLib.Extensions;
+﻿using System.Collections.Immutable;
+
+namespace ECSLib.Extensions;
 
 public static class CollectionExtension
 {
-    public static IEnumerable<T> Except<T>(this IEnumerable<T> col, T val) =>
-        col.Where(obj => val != null && !val.Equals(obj));
-
-    public static int HashContent<T>(this IEnumerable<T> col)
+    /// <returns>A hashcode made from every element within the collection, order doesn't matter.</returns>
+    public static int HashContent<T>(this IEnumerable<T> col) =>
+        col.Select(t => t?.GetHashCode() ?? 0).DefaultIfEmpty().Order().Aggregate(HashCode.Combine);
+    /*public static int HashContent<T>(this IEnumerable<T> col)
     {
         HashCode hash = new();
         foreach (var obj in col)
@@ -13,5 +15,5 @@ public static class CollectionExtension
             hash.Add(obj);
         }
         return hash.ToHashCode();
-    }
+    }*/
 }
