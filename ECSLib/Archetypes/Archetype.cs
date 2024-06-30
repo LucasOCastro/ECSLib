@@ -1,24 +1,16 @@
-﻿namespace ECSLib.Archetypes;
+﻿using ECSLib.Extensions;
+
+namespace ECSLib.Archetypes;
 
 internal readonly struct Archetype : IEquatable<Archetype>
 {
-    private readonly int _hash;
-    public IReadOnlySet<Type> Components { get; }
-
+    private readonly int _hash = 0;
+    public IReadOnlySet<Type> Components { get; } = new HashSet<Type>();
+    
     public Archetype(IEnumerable<Type> types)
     {
         Components = new HashSet<Type>(types);
-        _hash = CalculateHash(Components);
-    }
-
-    public static int CalculateHash(IEnumerable<Type> types)
-    {
-        HashCode hash = new();
-        foreach (var type in types)
-        {
-            hash.Add(type);
-        }
-        return hash.ToHashCode();
+        _hash = Components.HashContent();
     }
 
     public bool Equals(Archetype other) => Components.SequenceEqual(other.Components);
