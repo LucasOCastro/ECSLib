@@ -9,6 +9,30 @@ internal class ArchetypeManager
     private readonly Dictionary<Entity, int> _entityToArchetype = new();
 
     /// <summary>
+    /// Registers an entity to the archetype storage with the default empty archetype.
+    /// </summary>
+    public void Register(Entity entity)
+    {
+        var archetype = _storage.GetOrCreateArchetype(Array.Empty<Type>());
+        _entityToArchetype.Add(entity, archetype);
+    }
+    
+    /// <summary>
+    /// Unregisters an entity from the archetype storage.
+    /// </summary>
+    public void Unregister(Entity entity)
+    {
+        _entityToArchetype.Remove(entity);
+    }
+    
+    /// <returns>The <see cref="Type"/> of every component an entity has in its archetype.</returns>
+    public IEnumerable<Type> GetAllComponentTypes(Entity entity)
+    {
+        var archetype = _entityToArchetype[entity];
+        return _storage.GetAllComponentsInArchetype(archetype);
+    }
+    
+    /// <summary>
     /// Changes an entity's currently registered archetype to the one defined by the new components.
     /// </summary>
     private void ArchetypeUpdate(Entity entity, IEnumerable<Type> newComponents)
@@ -35,20 +59,5 @@ internal class ArchetypeManager
         var oldArchetype = _entityToArchetype[entity];
         var newComponents = _storage.GetAllComponentsInArchetype(oldArchetype).Except(componentType);
         ArchetypeUpdate(entity, newComponents);
-    }
-    
-    /// <returns>The <see cref="Type"/> of every component an entity has in its archetype.</returns>
-    public IEnumerable<Type> GetAllComponentTypes(Entity entity)
-    {
-        var archetype = _entityToArchetype[entity];
-        return _storage.GetAllComponentsInArchetype(archetype);
-    }
-
-    /// <summary>
-    /// Unregisters an entity from the archetype storage.
-    /// </summary>
-    public void Unregister(Entity entity)
-    {
-        _entityToArchetype.Remove(entity);
     }
 }

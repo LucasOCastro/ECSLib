@@ -16,6 +16,7 @@ public class ECS
     public Entity CreateEntity()
     {
         var entity = _entityManager.CreateEntity();
+        _archetypeManager.Register(entity);
         return entity;
     }
 
