@@ -64,4 +64,28 @@ internal class ArchetypeManager
         var newComponents = _storage.GetAllComponentsInArchetype(oldArchetype).Except(componentType);
         ArchetypeUpdate(entity, oldArchetype, newComponents);
     }
+    
+    /// <returns>A new <see cref="HashSet{T}"/> with all archetype ids which match the query.</returns>
+    private HashSet<int> QueryArchetypes(Query query)
+    {
+        HashSet<int> result;
+        if (query.HasAll)
+        {
+            result = _storage.GetArchetypesWithAll(query.GetAll());
+            if (query.HasAny)
+                result.IntersectWith(_storage.GetArchetypesWithAny(query.GetAny()));   
+        }
+        else if (query.HasAny)
+        {
+            result = _storage.GetArchetypesWithAny(query.GetAny());
+        }
+        else return [];
+        
+        result.ExceptWith(_storage.GetArchetypesWithAny(query.GetNone()));
+        return result;
+    }
+
+    /// <returns>All entities whose archetypes match the query.</returns>
+    public IEnumerable<Entity> QueryEntities(Query query) =>
+        QueryArchetypes(query).SelectMany(a => _archetypeToEntities[a]);
 }

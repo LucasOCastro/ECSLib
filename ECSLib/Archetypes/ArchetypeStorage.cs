@@ -40,22 +40,22 @@ internal class ArchetypeStorage
     }
     
     /// <returns>
-    /// All archetype ids which contain the componentType.
+    /// A new <see cref="HashSet{T}"/> with all archetype ids which contain the componentType.
     /// </returns>
-    public IReadOnlySet<int> GetArchetypesWith(Type componentType) =>
+    public HashSet<int> GetArchetypesWith(Type componentType) =>
         _componentTypeToArchetypeIndices.TryGetValue(componentType, out var indices)
             ? indices
             : new();
 
     /// <returns>
-    /// All archetype ids which contains all the componentTypes, and more.
+    /// A new <see cref="HashSet{T}"/> with all archetype ids which contains all the componentTypes, and more.
     /// </returns>
-    public IReadOnlySet<int> GetArchetypesWithAll(IEnumerable<Type> componentTypes) =>
+    public HashSet<int> GetArchetypesWithAll(IEnumerable<Type> componentTypes) =>
         componentTypes.Select(GetArchetypesWith).Intersection();
 
     /// <returns>
-    /// All archetype ids which contains at least one type from componentTypes.
+    /// A new <see cref="HashSet{T}"/> with all archetype ids which contains at least one type from componentTypes.
     /// </returns>
-    public IReadOnlySet<int> GetArchetypesWithAny(IEnumerable<Type> componentTypes) =>
+    public HashSet<int> GetArchetypesWithAny(IEnumerable<Type> componentTypes) =>
         componentTypes.Select(GetArchetypesWith).Union();
 }

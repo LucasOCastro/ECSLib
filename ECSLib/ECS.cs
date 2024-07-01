@@ -53,4 +53,7 @@ public class ECS
         _archetypeManager.Unregister(entity);
         _entityManager.RemoveEntity(entity);
     }
+
+    /// <inheritdoc cref="ArchetypeManager.QueryEntities"/>
+    public IEnumerable<Entity> Query(Query query) => _archetypeManager.QueryEntities(query);
 }
