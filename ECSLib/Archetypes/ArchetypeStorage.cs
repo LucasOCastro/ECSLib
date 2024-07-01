@@ -4,7 +4,7 @@ namespace ECSLib.Archetypes;
 
 internal class ArchetypeStorage
 {
-    private readonly List<Archetype> _archetypes = new();
+    private readonly List<Archetype> _archetypes = [];
     private readonly Dictionary<Archetype, int> _archetypeToIndex = new();
     private readonly Dictionary<Type, HashSet<int>> _componentTypeToArchetypeIndices = new();
 
@@ -48,13 +48,13 @@ internal class ArchetypeStorage
             : new();
 
     /// <returns>
-    /// All archetype ids which contain all of the componentTypes, and more.
+    /// All archetype ids which contains all the componentTypes, and more.
     /// </returns>
     public IReadOnlySet<int> GetArchetypesWithAll(IEnumerable<Type> componentTypes) =>
         componentTypes.Select(GetArchetypesWith).Intersection();
 
     /// <returns>
-    /// All archetype ids which contain at least one type from componentTypes.
+    /// All archetype ids which contains at least one type from componentTypes.
     /// </returns>
     public IReadOnlySet<int> GetArchetypesWithAny(IEnumerable<Type> componentTypes) =>
         componentTypes.Select(GetArchetypesWith).Union();

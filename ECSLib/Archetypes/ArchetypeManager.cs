@@ -7,6 +7,7 @@ internal class ArchetypeManager
 {
     private readonly ArchetypeStorage _storage = new();
     private readonly Dictionary<Entity, int> _entityToArchetype = new();
+    private readonly Dictionary<int, HashSet<Entity>> _archetypeToEntities = new();
 
     /// <summary>
     /// Registers an entity to the archetype storage with the default empty archetype.
@@ -15,6 +16,7 @@ internal class ArchetypeManager
     {
         var archetype = _storage.GetOrCreateArchetype(Array.Empty<Type>());
         _entityToArchetype.Add(entity, archetype);
+        _archetypeToEntities.GetOrAddNew(archetype).Add(entity);
     }
     
     /// <summary>
@@ -35,10 +37,12 @@ internal class ArchetypeManager
     /// <summary>
     /// Changes an entity's currently registered archetype to the one defined by the new components.
     /// </summary>
-    private void ArchetypeUpdate(Entity entity, IReadOnlySet<Type> newComponents)
+    private void ArchetypeUpdate(Entity entity, int oldArchetype, IReadOnlySet<Type> newComponents)
     {
         var newArchetype = _storage.GetOrCreateArchetype(newComponents);
         _entityToArchetype[entity] = newArchetype;
+        _archetypeToEntities.GetOrAddNew(oldArchetype).Remove(entity);
+        _archetypeToEntities.GetOrAddNew(newArchetype).Add(entity);
     }
     
     /// <summary>
@@ -48,7 +52,7 @@ internal class ArchetypeManager
     {
         var oldArchetype = _entityToArchetype[entity];
         var newComponents = _storage.GetAllComponentsInArchetype(oldArchetype).Include(componentType);
-        ArchetypeUpdate(entity, newComponents);
+        ArchetypeUpdate(entity, oldArchetype, newComponents);
     }
 
     /// <summary>
@@ -58,6 +62,6 @@ internal class ArchetypeManager
     {
         var oldArchetype = _entityToArchetype[entity];
         var newComponents = _storage.GetAllComponentsInArchetype(oldArchetype).Except(componentType);
-        ArchetypeUpdate(entity, newComponents);
+        ArchetypeUpdate(entity, oldArchetype, newComponents);
     }
 }

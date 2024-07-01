@@ -13,7 +13,7 @@ internal readonly struct Archetype : IEquatable<Archetype>
         _hash = Components.HashContent();
     }
 
-    public bool Equals(Archetype other) => Components.All(other.Components.Contains);
+    public bool Equals(Archetype other) => Components.SetEquals(other.Components);
 
     public override bool Equals(object? obj) => obj is Archetype other && Equals(other);
 
