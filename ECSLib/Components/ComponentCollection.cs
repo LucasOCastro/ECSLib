@@ -7,11 +7,11 @@ namespace ECSLib.Components;
 
 internal class ComponentCollection
 {
-    private const int ArrayLengthIncrement = 100;
+    private const int ComponentCountIncrement = 100;
     
     public int Count { get; private set; }
     
-    private byte[] _components = new byte[ArrayLengthIncrement];
+    private byte[] _components;
     private readonly Dictionary<Entity, int> _entityToCompIndex = new();
     private readonly Dictionary<int, Entity> _compIndexToEntity = new();
 
@@ -21,12 +21,17 @@ internal class ComponentCollection
     {
         _componentType = componentType;
         _componentSize = Marshal.SizeOf(_componentType);
+        _components = new byte[CompIndexToByteIndex(ComponentCountIncrement)];
     }
 
-    private Span<byte> GetByteSpanAt(int index) => new(_components, index, _componentSize);
+    private int CompIndexToByteIndex(int compIndex) => compIndex * _componentSize;
+    
+    private Span<byte> GetByteSpanAt(int byteIndex) => new(_components, byteIndex, _componentSize);
 
-    private Span<TComponent> GetSpanAt<TComponent>(int index) where TComponent : struct =>
-        MemoryMarshal.Cast<byte, TComponent>(GetByteSpanAt(index));
+    private Span<TComponent> GetSpanAt<TComponent>(int compIndex) where TComponent : struct =>
+        MemoryMarshal.Cast<byte, TComponent>(GetByteSpanAt(CompIndexToByteIndex(compIndex)));
+
+    private bool IsFull() => CompIndexToByteIndex(Count) == _components.Length;
 
     /// <returns>
     /// A reference to the component.
@@ -53,7 +58,7 @@ internal class ComponentCollection
             throw new DuplicatedComponentException(_componentType, entity);
         }
 
-        if (Count == _components.Length)
+        if (IsFull())
         {
             Expand();
         }
@@ -112,6 +117,6 @@ internal class ComponentCollection
     /// </summary>
     private void Expand()
     {
-        Array.Resize(ref _components, _componentSize * (Count + ArrayLengthIncrement));
+        Array.Resize(ref _components, _components.Length + CompIndexToByteIndex(ComponentCountIncrement));
     }
 }
