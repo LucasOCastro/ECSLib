@@ -9,5 +9,7 @@
     &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.Tests&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.StressTest.Scenario1&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests.TestQueries&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ReflectionTests.TestReflectionInit&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

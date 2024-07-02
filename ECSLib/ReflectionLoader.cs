@@ -6,10 +6,20 @@ namespace ECSLib;
 
 internal static class ReflectionLoader
 {
-    private static IEnumerable<Type> AllConcreteTypesWhichInherit(Type baseType)
+    private static IEnumerable<Type> AllConcreteTypesWhichInherit(IEnumerable<Assembly> assemblies, Type baseType)
     {
-        var assembly = Assembly.GetEntryAssembly();
-        return assembly != null ? assembly.GetTypes().Where(t => !t.IsAbstract && baseType.IsAssignableFrom(t)) : [];
+        return assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(t => !t.IsAbstract && baseType.IsAssignableFrom(t));
+    }
+
+    private static IEnumerable<Assembly> GetAllAssembliesFrom(Assembly baseAssembly)
+    {
+        yield return baseAssembly;
+        foreach (var referencedAssembly in baseAssembly.GetReferencedAssemblies())
+        {
+            yield return Assembly.Load(referencedAssembly);
+        }
     }
     
     
@@ -17,15 +27,9 @@ internal static class ReflectionLoader
     /// Registers all concrete classes which inherit <see cref="BaseSystem"/> into the provided <see cref="SystemManager"/>.
     /// </summary>
     /// <exception cref="NullReferenceException">Thrown if wasn't able to load the entry assembly.</exception>
-    public static void RegisterAllSystems(SystemManager systemManager)
+    public static void RegisterAllSystems(SystemManager systemManager, Assembly assembly)
     {
-        var assembly = Assembly.GetEntryAssembly();
-        if (assembly == null)
-        {
-            throw new NullReferenceException("Null assembly.");
-        }
-
-        foreach (var systemType in AllConcreteTypesWhichInherit(typeof(BaseSystem)))
+        foreach (var systemType in AllConcreteTypesWhichInherit(GetAllAssembliesFrom(assembly), typeof(BaseSystem)))
         {
             try
             {

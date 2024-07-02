@@ -1,4 +1,5 @@
-﻿using ECSLib.Archetypes;
+﻿using System.Reflection;
+using ECSLib.Archetypes;
 using ECSLib.Components;
 using ECSLib.Entities;
 using ECSLib.Systems;
@@ -19,7 +20,7 @@ public class ECS
     public ECS(bool registerSystemsViaReflection = false)
     {
         if (registerSystemsViaReflection)
-            ReflectionLoader.RegisterAllSystems(_systemManager);
+            ReflectionLoader.RegisterAllSystems(_systemManager, Assembly.GetCallingAssembly());
     }
 
     /// <summary>Registers a new entity with no components.</summary>
