@@ -1,6 +1,7 @@
 ﻿using ECSLib.Archetypes;
 using ECSLib.Components;
 using ECSLib.Entities;
+using ECSLib.Systems;
 
 namespace ECSLib;
 
@@ -9,6 +10,7 @@ public class ECS
     private readonly EntityManager _entityManager = new();
     private readonly ComponentManager _componentManager = new();
     private readonly ArchetypeManager _archetypeManager = new();
+    private readonly SystemManager _systemManager = new(); 
 
     /// <returns>
     /// A new entity with no components and returns its identifier.
@@ -56,4 +58,10 @@ public class ECS
 
     /// <inheritdoc cref="ArchetypeManager.QueryEntities"/>
     public IEnumerable<Entity> Query(Query query) => _archetypeManager.QueryEntities(query);
+
+    /// <inheritdoc cref="SystemManager.RegisterSystem"/>
+    public void RegisterSystem(BaseSystem system) => _systemManager.RegisterSystem(system);
+    
+    /// <inheritdoc cref="SystemManager.Process"/>
+    public void ProcessSystems(float dt) => _systemManager.Process(dt, this);
 }
