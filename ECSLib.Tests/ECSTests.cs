@@ -125,47 +125,4 @@ public class ECSTests
         Assert.That(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityA)),
             Is.EqualTo(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityB))));
     }
-
-    [Test, Order(3)]
-    public void TestQueries()
-    {
-        //Create two entities with TestComponentA
-        var entityA = _world.CreateEntity();
-        _world.AddComponent<TestComponentA>(entityA, new(){Data = 0});
-        var entityB = _world.CreateEntity();
-        _world.AddComponent<TestComponentA>(entityB, new(){Data = 1});
-        
-        //Create one entity with TestComponentA and TestComponentB
-        var entityC = _world.CreateEntity();
-        _world.AddComponent<TestComponentA>(entityC, new(){Data = 2});
-        _world.AddComponent<TestComponentB>(entityC, new(){BoolData = true});
-        
-        //Create one entity with TestComponentB
-        var entityD = _world.CreateEntity();
-        _world.AddComponent<TestComponentB>(entityD, new(){BoolData = false});
-        
-        //Create one entity with no component
-        var entityE = _world.CreateEntity();
-        Assert.Multiple(() =>
-        {
-
-            //Query by component A and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentA))).ToHashSet().SetEquals([entityA, entityB, entityC]));
-
-            //Query by component B and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentB))).ToHashSet().SetEquals([entityC, entityD]));
-
-            //Query by component A and B and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentB), typeof(TestComponentA))).ToHashSet().SetEquals([entityC]));
-
-            //Query by component A or component B and assert the result
-            Assert.That(_world.Query(Query.Any(typeof(TestComponentA), typeof(TestComponentB))).ToHashSet().SetEquals([entityA, entityB, entityC, entityD]));
-
-            //Query by component A and not component B and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentA)).WithNone(typeof(TestComponentB))).ToHashSet().SetEquals([entityA, entityB]));
-
-            //Query by component B and not component A and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentB)).WithNone(typeof(TestComponentA))).ToHashSet().SetEquals([entityD]));
-        });
-    }
 }

@@ -1,6 +1,6 @@
 ﻿namespace ECSLib.Tests;
 
-[Order(2)]
+[Order(100)]
 public class StressTest
 {
     private struct TestComponentA
