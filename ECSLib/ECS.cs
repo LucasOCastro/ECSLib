@@ -10,11 +10,20 @@ public class ECS
     private readonly EntityManager _entityManager = new();
     private readonly ComponentManager _componentManager = new();
     private readonly ArchetypeManager _archetypeManager = new();
-    private readonly SystemManager _systemManager = new(); 
+    private readonly SystemManager _systemManager = new();
+    
+    /// <param name="registerSystemsViaReflection">
+    /// If true, all concrete classes which inherit <see cref="BaseSystem"/> will automatically
+    /// be registered to execute on <see cref="ProcessSystems"/>.
+    /// </param>
+    public ECS(bool registerSystemsViaReflection = false)
+    {
+        if (registerSystemsViaReflection)
+            ReflectionLoader.RegisterAllSystems(_systemManager);
+    }
 
-    /// <returns>
-    /// A new entity with no components and returns its identifier.
-    /// </returns>
+    /// <summary>Registers a new entity with no components.</summary>
+    /// <returns> The new entity. </returns>
     public Entity CreateEntity()
     {
         var entity = _entityManager.CreateEntity();
@@ -42,10 +51,7 @@ public class ECS
         _componentManager.RemoveComponent<TComponent>(entity);
     }
 
-    /// <summary>
-    /// Unregisters an entity and all of its components.
-    /// </summary>
-    /// <param name="entity"></param>
+    /// <summary> Unregisters an entity and all of its components. </summary>
     public void DestroyEntity(Entity entity)
     {
         foreach (var componentType in _archetypeManager.GetAllComponentTypes(entity))
@@ -61,6 +67,10 @@ public class ECS
 
     /// <inheritdoc cref="SystemManager.RegisterSystem"/>
     public void RegisterSystem(BaseSystem system) => _systemManager.RegisterSystem(system);
+
+    /// <inheritdoc cref="SystemManager.RegisterSystem{T}"/>
+    public void RegisterSystem<T>() where T : BaseSystem, new() => _systemManager.RegisterSystem<T>();
+    
     
     /// <inheritdoc cref="SystemManager.Process"/>
     public void ProcessSystems(float dt) => _systemManager.Process(dt, this);
