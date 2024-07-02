@@ -2,10 +2,5 @@
 
 namespace ECSLib.Components.Exceptions;
 
-public class DuplicatedComponentException : Exception
-{
-    public DuplicatedComponentException(Type componentType, Entity entity)
-        : base($"Component {componentType.Name} already present in entity {entity.ID}.")
-    {
-    }
-}
+public class DuplicatedComponentException(Type componentType, Entity entity)
+    : Exception($"Component {componentType.Name} already present in entity {entity.ID}.");
