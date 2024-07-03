@@ -24,16 +24,6 @@ public class TestSystemReflection : BaseSystem
 [Order(3)]
 public class ReflectionTests
 {
-    private struct TestComponentA
-    {
-        public int ValueInt;
-    }
-
-    private struct TestComponentB
-    {
-        public double ValueDbl;
-    }
-    
     private ECS _world;
     
     [SetUp]
