@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using ECSLib.Archetypes;
-using ECSLib.Components;
 using ECSLib.Entities;
 using ECSLib.Systems;
 
@@ -9,7 +8,6 @@ namespace ECSLib;
 public class ECS
 {
     private readonly EntityManager _entityManager = new();
-    private readonly ComponentManager _componentManager = new();
     private readonly ArchetypeManager _archetypeManager = new();
     private readonly SystemManager _systemManager = new();
     
@@ -28,28 +26,26 @@ public class ECS
     public Entity CreateEntity()
     {
         var entity = _entityManager.CreateEntity();
-        _archetypeManager.Register(entity);
+        _archetypeManager.RegisterEmptyEntity(entity);
         return entity;
     }
 
     /// <inheritdoc cref="ComponentManager.GetComponent{TComponent}"/>
     public ref TComponent GetComponent<TComponent>(Entity entity) where TComponent : struct
     {
-        return ref _componentManager.GetComponent<TComponent>(entity);
+        return ref _archetypeManager.GetComponent<TComponent>(entity);
     }
 
     /// <inheritdoc cref="ComponentManager.AddComponent{TComponent}"/>
     public void AddComponent<TComponent>(Entity entity, TComponent component = default) where TComponent : struct
     {
-        _archetypeManager.BeforeComponentAddedTo(entity, typeof(TComponent));
-        _componentManager.AddComponent(entity, component);
+        _archetypeManager.AddComponent(entity, component);
     }
     
     /// <inheritdoc cref="ComponentManager.RemoveComponent{TComponent}"/>
     public void RemoveComponent<TComponent>(Entity entity) where TComponent : struct
     {
-        _archetypeManager.BeforeComponentRemovedFrom(entity, typeof(TComponent));
-        _componentManager.RemoveComponent<TComponent>(entity);
+        _archetypeManager.RemoveComponent<TComponent>(entity);
     }
 
     /// <summary> Unregisters an entity and all of its components. </summary>
@@ -57,7 +53,8 @@ public class ECS
     {
         foreach (var componentType in _archetypeManager.GetAllComponentTypes(entity))
         {
-            _componentManager.RemoveComponent(entity, componentType);
+            //TODO moves slowly from archetype to archetype must make a complete jump faster
+            _archetypeManager.RemoveComponent(entity, componentType);
         }
         _archetypeManager.Unregister(entity);
         _entityManager.RemoveEntity(entity);

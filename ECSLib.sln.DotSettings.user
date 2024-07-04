@@ -1,4 +1,10 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=2fb4fd59_002D0d23_002D4818_002Dac7b_002D1767e343f15d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="ECSTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=476a7ff1_002D9232_002D419a_002D8be3_002D15ea435423fe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Session" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;And&gt;&#xD;
     &lt;TestAncestor&gt;&#xD;
@@ -13,10 +19,45 @@
     &lt;/TestAncestor&gt;&#xD;
   &lt;/And&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4906291f_002Dafa1_002D4e5b_002Da07f_002Ddd6b6c46ee34/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Tests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4906291f_002Dafa1_002D4e5b_002Da07f_002Ddd6b6c46ee34/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Tests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ArrayMarshalingTests.TestMarshalString&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6bd63adb_002D4b79_002D45e5_002Daf87_002D8707dcd8c9c1/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestEntityComponentAddRemove" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests.TestEntityComponentAddRemove&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ReflectionTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests.TestSystems&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests.TestArchetypeTransfer&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests.TestQueries&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=70181675_002Dff2f_002D457a_002D8291_002D3464c8ae256f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestSystems" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests.TestSystems&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7ac38451_002D10d6_002D4f5b_002Dbaf5_002Ddda077de197f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestSystems #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests.TestSystems&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8f488b39_002D9f1b_002D4b0d_002Db95c_002Dd5c75cdfc9bf/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestEntityComponentAddRemove #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;Or&gt;&#xD;
+    &lt;TestAncestor&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests.TestEntityComponentAddRemove&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ReflectionTests&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests.TestSystems&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests.TestArchetypeTransfer&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.ECSTests&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests.TestQueries&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::1C849003-32C6-433C-AD9C-B46799494C46::net8.0::ECSLib.Tests.QuerySystemTests&lt;/TestId&gt;&#xD;
+    &lt;/TestAncestor&gt;&#xD;
+    &lt;ProjectFile&gt;1C849003-32C6-433C-AD9C-B46799494C46/f:StressTest.cs&lt;/ProjectFile&gt;&#xD;
+  &lt;/Or&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=91cbbe7e_002D647c_002D4136_002Da469_002D8cd531b0a1d2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestEntityArchetypeUpdate" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;

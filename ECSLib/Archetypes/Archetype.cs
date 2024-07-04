@@ -1,25 +1,18 @@
-﻿using ECSLib.Extensions;
+﻿using ECSLib.Components;
 
 namespace ECSLib.Archetypes;
 
-internal readonly struct Archetype : IEquatable<Archetype>
+/// <summary>
+/// Represents an archetype as its definition and the component arrays it contains.
+/// </summary>
+internal readonly struct Archetype
 {
-    private readonly int _hash = 0;
-    public IReadOnlySet<Type> Components { get; } = new HashSet<Type>();
+    public ArchetypeDefinition Definition { get; }
+    public ComponentCollectionSet Components { get; }
     
-    public Archetype(IEnumerable<Type> types)
+    public Archetype(ArchetypeDefinition definition)
     {
-        Components = new HashSet<Type>(types);
-        _hash = Components.HashContent();
+        Definition = definition;
+        Components = new(definition.Components);
     }
-
-    public bool Equals(Archetype other) => Components.SetEquals(other.Components);
-
-    public override bool Equals(object? obj) => obj is Archetype other && Equals(other);
-
-    public override int GetHashCode() => _hash;
-
-    public static bool operator ==(Archetype left, Archetype right) => left.Equals(right);
-
-    public static bool operator !=(Archetype left, Archetype right) => !(left == right);
 }

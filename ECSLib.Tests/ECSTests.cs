@@ -89,12 +89,9 @@ public class ECSTests
             .First(f => f.FieldType == typeof(ArchetypeManager));
         var archetypeManager = managerField.GetValue(_world) as ArchetypeManager;
         Assert.That(archetypeManager, Is.Not.Null);
-
-        var storageField = typeof(ArchetypeManager)
-            .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-            .First(f => f.FieldType == typeof(ArchetypeStorage));
-        var archetypeStorage = storageField.GetValue(archetypeManager) as ArchetypeStorage;
-        Assert.That(archetypeStorage, Is.Not.Null);
+        
+        var getOrCreateArchField = typeof(ArchetypeManager).GetMethod("GetOrCreateArchetype", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(getOrCreateArchField, Is.Not.Null);
      
         //Creates an entity and asserts its archetype is empty
         var entityA = _world.CreateEntity();
@@ -110,20 +107,20 @@ public class ECSTests
         
         //Creates another entity and assert their archetypes are different
         var entityB = _world.CreateEntity();
-        Assert.That(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityA)),
-            Is.Not.EqualTo(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityB))));
+        Assert.That( getOrCreateArchField.Invoke(archetypeManager, [archetypeManager.GetAllComponentTypes(entityA)]),
+            Is.Not.EqualTo(getOrCreateArchField.Invoke(archetypeManager, [archetypeManager.GetAllComponentTypes(entityB)])));
         
         //Adds the components to the entity and assert their archetypes are equal (ordered insertion)
         _world.AddComponent<TestComponentA>(entityB);
         _world.AddComponent<TestComponentB>(entityB);
-        Assert.That(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityA)),
-            Is.EqualTo(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityB))));
+        Assert.That(getOrCreateArchField.Invoke(archetypeManager, [archetypeManager.GetAllComponentTypes(entityA)]),
+            Is.EqualTo(getOrCreateArchField.Invoke(archetypeManager, [archetypeManager.GetAllComponentTypes(entityB)])));
         
         //Adds the components to the entity and assert their archetypes are equal (unordered insertion)
         _world.RemoveComponent<TestComponentA>(entityB);
         _world.AddComponent<TestComponentA>(entityB);
-        Assert.That(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityA)),
-            Is.EqualTo(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityB))));
+        Assert.That(getOrCreateArchField.Invoke(archetypeManager, [archetypeManager.GetAllComponentTypes(entityA)]),
+            Is.EqualTo(getOrCreateArchField.Invoke(archetypeManager, [archetypeManager.GetAllComponentTypes(entityB)])));
     }
 
     [Test, Order(3)]
