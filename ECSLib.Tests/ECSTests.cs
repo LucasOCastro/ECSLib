@@ -125,4 +125,39 @@ public class ECSTests
         Assert.That(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityA)),
             Is.EqualTo(archetypeStorage.GetOrCreateArchetype(archetypeManager.GetAllComponentTypes(entityB))));
     }
+
+    [Test, Order(3)]
+    public void TestArchetypeTransfer()
+    {
+        const int testValueA = 20;
+        const bool testValueB = true;
+        const int testValueA2 = 100;
+        
+        var entity = _world.CreateEntity();
+        
+        //Adds a component and assert it is the correct value.
+        _world.AddComponent<TestComponentA>(entity, new(){Data = testValueA});
+        Assert.That(_world.GetComponent<TestComponentA>(entity).Data, Is.EqualTo(testValueA));
+        
+        //Adds another component and assert the initial one kept its value.
+        _world.AddComponent<TestComponentB>(entity, new(){BoolData = testValueB});
+        Assert.Multiple(() =>
+        {
+            Assert.That(_world.GetComponent<TestComponentA>(entity).Data, Is.EqualTo(testValueA));
+            Assert.That(_world.GetComponent<TestComponentB>(entity).BoolData, Is.EqualTo(testValueB));
+        });
+        
+        //Remove the second component and assert the first kept its value.
+        _world.RemoveComponent<TestComponentB>(entity);
+        Assert.That(_world.GetComponent<TestComponentA>(entity).Data, Is.EqualTo(testValueA));
+        
+        //Create a new entity in the same archetype and assert the values are correct
+        var entity2 = _world.CreateEntity();
+        _world.AddComponent<TestComponentA>(entity2, new(){Data = testValueA2});
+        Assert.Multiple(() =>
+        {
+            Assert.That(_world.GetComponent<TestComponentA>(entity).Data, Is.EqualTo(testValueA));
+            Assert.That(_world.GetComponent<TestComponentA>(entity2).Data, Is.EqualTo(testValueA2));
+        });
+    }
 }
