@@ -1,10 +1,12 @@
-﻿using ECSLib.Archetypes;
-namespace ECSLib.Tests;
+﻿namespace ECSLib.Tests;
 
 [Order(100)]
 public class StressTest
 {
-    
+    private struct TestComponentA
+    {
+        public double ValueDbl;
+    }
 
     private struct TestComponentB
     {
