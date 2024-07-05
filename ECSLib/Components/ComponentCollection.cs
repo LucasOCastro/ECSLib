@@ -12,10 +12,10 @@ internal class ComponentCollection
     
     private int CompIndexToByteIndex(int compIndex) => compIndex * _typeSize;
 
-    public Span<byte> GetByteSpanAt(int byteIndex) => new(_bytes, byteIndex, _typeSize);
+    public Span<byte> GetByteSpanAt(int compIndex) => new(_bytes, CompIndexToByteIndex(compIndex), _typeSize);
         
     public Span<TComponent> GetSpanAt<TComponent>(int compIndex) where TComponent : struct =>
-        MemoryMarshal.Cast<byte, TComponent>(GetByteSpanAt(CompIndexToByteIndex(compIndex)));
+        MemoryMarshal.Cast<byte, TComponent>(GetByteSpanAt(compIndex));
 
     public void Resize(int extraCount) => 
         Array.Resize(ref _bytes, _bytes.Length + CompIndexToByteIndex(extraCount));
