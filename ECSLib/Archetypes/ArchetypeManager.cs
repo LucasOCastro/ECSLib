@@ -6,7 +6,8 @@ namespace ECSLib.Archetypes;
 
 internal class ArchetypeManager
 {
-    #region COLLECTIONS 
+    #region COLLECTIONS
+    
     /// <summary> Stores the archetypes themselves. The empty archetype begins initialized in index 0. </summary>
     private readonly List<Archetype> _archetypes = [new(new([]))];
     
@@ -22,8 +23,10 @@ internal class ArchetypeManager
     /// <summary> Maps each component type to all archetypes which include it. </summary>
     private readonly Dictionary<Type, HashSet<int>> _componentTypeToArchetypeIndices = [];
     
-    /// <summary> Maps each entity to its archetype record. </summary>
-    private readonly Dictionary<Entity, ArchetypeRecord> _entityToArchetypeRecord = [];
+    
+    /// <summary> Maps each entity to its archetype record, and each archetype record to its entity. </summary>
+    private readonly BidirectionalMap<Entity, ArchetypeRecord> _entitiesRecords = new();
+    
     #endregion
     
     #region ARCHETYPE_OPERATIONS
@@ -32,9 +35,17 @@ internal class ArchetypeManager
     private int RegisterNewEntityForArchetype(int archetypeIndex) =>
         _archetypes[archetypeIndex].Components.RegisterNew();
     
-    /// <inheritdoc cref="Components.ComponentCollectionSet.FreePosition"/>
-    private void FreePositionInArchetype(ArchetypeRecord oldRecord) =>
-        _archetypes[oldRecord.ArchetypeIndex].Components.FreePosition(oldRecord.EntityIndexInArchetype);
+    /// <summary><inheritdoc cref="Components.ComponentCollectionSet.FreePosition" path="/summary"/></summary>
+    private void FreePositionInArchetype(ArchetypeRecord oldRecord)
+    {
+        int movedIndex = _archetypes[oldRecord.ArchetypeIndex].Components.FreePosition(oldRecord.EntityIndexInArchetype);
+        if (movedIndex >= 0)
+        {
+            var movedRecord = oldRecord with { EntityIndexInArchetype = movedIndex };
+            var movedEntity = _entitiesRecords[movedRecord];
+            _entitiesRecords.Set(movedEntity, oldRecord);
+        }
+    }
 
     /// <summary>
     /// If an archetype is already registered for this collection of types, retrieve its id.
@@ -67,7 +78,8 @@ internal class ArchetypeManager
     public void RegisterEmptyEntity(Entity entity)
     {
         int indexInComponentSet = RegisterNewEntityForArchetype(0);
-        _entityToArchetypeRecord.Add(entity, new(0, indexInComponentSet));
+        ArchetypeRecord record = new(0, indexInComponentSet);
+        _entitiesRecords.Add(entity, record);
         _archetypeIndexToEntities[0].Add(entity);
     }
     
@@ -77,13 +89,11 @@ internal class ArchetypeManager
     /// </summary>
     private void MoveEntityTo(Entity entity, int newArchetypeIndex)
     {
-        //Copy components from old archetype to the new archetype
-        var oldRecord = _entityToArchetypeRecord[entity];
-        
         //Allocate space in the new archetype
         int newIndexInComponentSet = RegisterNewEntityForArchetype(newArchetypeIndex);
         
         //Copy components to the new archetype
+        var oldRecord = _entitiesRecords[entity];// _entityToArchetypeRecord[entity];
         _archetypes[oldRecord.ArchetypeIndex].Components
             .CopyTo(oldRecord.EntityIndexInArchetype, _archetypes[newArchetypeIndex].Components, newIndexInComponentSet);
         
@@ -92,10 +102,11 @@ internal class ArchetypeManager
         
         //Remove from the old archetype
         _archetypeIndexToEntities[oldRecord.ArchetypeIndex].Remove(entity);
-
+        
         //Add to the new archetype
         _archetypeIndexToEntities[newArchetypeIndex].Add(entity);
-        _entityToArchetypeRecord[entity] = new(newArchetypeIndex, newIndexInComponentSet);
+        ArchetypeRecord newRecord = new(newArchetypeIndex, newIndexInComponentSet);
+        _entitiesRecords.Set(entity, newRecord);
     }
     
     /// <summary>
@@ -103,10 +114,9 @@ internal class ArchetypeManager
     /// </summary>
     public void Unregister(Entity entity)
     {
-        var currentArchetype = _entityToArchetypeRecord[entity].ArchetypeIndex;
-        var oldRecord = _entityToArchetypeRecord[entity]; 
-        _entityToArchetypeRecord.Remove(entity);
-        _archetypeIndexToEntities[currentArchetype].Remove(entity);
+        var oldRecord = _entitiesRecords[entity]; 
+        _archetypeIndexToEntities[oldRecord.ArchetypeIndex].Remove(entity);
+        _entitiesRecords.Remove(entity);
         FreePositionInArchetype(oldRecord);
     }
     
@@ -117,7 +127,7 @@ internal class ArchetypeManager
     /// <returns>The type of every component an entity has in its archetype.</returns>
     public IReadOnlySet<Type> GetAllComponentTypes(Entity entity)
     {
-        var archetype = _entityToArchetypeRecord[entity].ArchetypeIndex;
+        var archetype = _entitiesRecords[entity].ArchetypeIndex;
         return _archetypes[archetype].Definition.Components;
     }
     
@@ -172,7 +182,7 @@ internal class ArchetypeManager
     /// <exception cref="MissingComponentException">Thrown if tried to get a component the entity does not have.</exception>
     public ref TComponent GetComponent<TComponent>(Entity entity) where TComponent : struct
     {
-        var record = _entityToArchetypeRecord[entity];
+        var record = _entitiesRecords[entity];
         if (!_archetypes[record.ArchetypeIndex].Definition.Components.Contains(typeof(TComponent)))
         {
             throw new MissingComponentException(typeof(TComponent), entity);
