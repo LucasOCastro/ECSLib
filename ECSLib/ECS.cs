@@ -20,6 +20,8 @@ public class ECS
         if (registerSystemsViaReflection)
             ReflectionLoader.RegisterAllSystems(_systemManager, Assembly.GetCallingAssembly());
     }
+    
+    #region ENTITIES
 
     /// <summary>Registers a new entity with no components.</summary>
     /// <returns> The new entity. </returns>
@@ -29,25 +31,7 @@ public class ECS
         _archetypeManager.RegisterEmptyEntity(entity);
         return entity;
     }
-
-    /// <inheritdoc cref="ComponentManager.GetComponent{TComponent}"/>
-    public ref TComponent GetComponent<TComponent>(Entity entity) where TComponent : struct
-    {
-        return ref _archetypeManager.GetComponent<TComponent>(entity);
-    }
-
-    /// <inheritdoc cref="ComponentManager.AddComponent{TComponent}"/>
-    public void AddComponent<TComponent>(Entity entity, TComponent component = default) where TComponent : struct
-    {
-        _archetypeManager.AddComponent(entity, component);
-    }
     
-    /// <inheritdoc cref="ComponentManager.RemoveComponent{TComponent}"/>
-    public void RemoveComponent<TComponent>(Entity entity) where TComponent : struct
-    {
-        _archetypeManager.RemoveComponent<TComponent>(entity);
-    }
-
     /// <summary> Unregisters an entity and all of its components. </summary>
     public void DestroyEntity(Entity entity)
     {
@@ -59,10 +43,36 @@ public class ECS
         _archetypeManager.Unregister(entity);
         _entityManager.RemoveEntity(entity);
     }
+    
+    #endregion
+    
+    #region COMPONENTS
+    
+    /// <inheritdoc cref="ArchetypeManager.GetComponent{TComponent}"/>
+    public ref TComponent GetComponent<TComponent>(Entity entity) where TComponent : struct
+    {
+        return ref _archetypeManager.GetComponent<TComponent>(entity);
+    }
+
+    /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}"/>
+    public void AddComponent<TComponent>(Entity entity, TComponent component = default) where TComponent : struct
+    {
+        _archetypeManager.AddComponent(entity, component);
+    }
+    
+    /// <inheritdoc cref="ArchetypeManager.RemoveComponent{TComponent}"/>
+    public void RemoveComponent<TComponent>(Entity entity) where TComponent : struct
+    {
+        _archetypeManager.RemoveComponent<TComponent>(entity);
+    }
 
     /// <inheritdoc cref="ArchetypeManager.QueryEntities"/>
     public IEnumerable<Entity> Query(Query query) => _archetypeManager.QueryEntities(query);
 
+    #endregion
+
+    #region  SYSTEMS
+    
     /// <inheritdoc cref="SystemManager.RegisterSystem"/>
     public void RegisterSystem(BaseSystem system) => _systemManager.RegisterSystem(system);
 
@@ -72,4 +82,6 @@ public class ECS
     
     /// <inheritdoc cref="SystemManager.Process"/>
     public void ProcessSystems(float dt) => _systemManager.Process(dt, this);
+    
+    #endregion
 }
