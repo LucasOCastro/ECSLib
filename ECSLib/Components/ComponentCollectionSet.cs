@@ -42,33 +42,26 @@ internal class ComponentCollectionSet
     }
 
     /// <summary> Removes the component at the index and fills up the empty spot. </summary>
-    public void FreePosition(int index)
+    /// <returns> The index of the item which was moved to fill '<see cref="index"/>', or -1 if nothing was moved.</returns>
+    public int FreePosition(int index)
     {
-        FillPosition(index);
-        _count--;
-    }
-
-    /// <summary>
-    /// Moves an element from the end of the component array to the empty index, ensuring it is packed.
-    /// </summary>
-    private void FillPosition(int emptyCompIndex)
-    {
+        //Fill the position at index and clear the last in the array
+        int lastCompIndex = _count - 1;
         foreach (var componentArray in _typeToComponents.Values)
         {
-            // If the empty position is at the end of the array, we do not need to fill it up, just clear that specific position.
-            int lastCompIndex = _count - 1;
-            if (emptyCompIndex == lastCompIndex)
+            // If the empty position is at the end of the array, we do not need to fill it up, just clear at the end.
+            if (index != lastCompIndex)
             {
-                componentArray.GetByteSpanAt(emptyCompIndex).Clear();
-                return;
+                var lastSpan = componentArray.GetByteSpanAt(lastCompIndex);
+                lastSpan.CopyTo(componentArray.GetByteSpanAt(index));
+                lastSpan.Clear();
             }
-
-            // Actually perform the update and clear the position which was now left empty.
-            var lastSpan = componentArray.GetByteSpanAt(lastCompIndex);
-            lastSpan.CopyTo(componentArray.GetByteSpanAt(emptyCompIndex));
-            lastSpan.Clear();
+            componentArray.GetByteSpanAt(lastCompIndex).Clear();
         }
+        _count--;
+        return index != lastCompIndex ?  lastCompIndex : -1;
     }
+
 
     /// <summary>
     /// Expands the component array by <see cref="ComponentCountIncrement"/>.
