@@ -1,4 +1,6 @@
-﻿namespace ECSLib.Components;
+﻿using System.Runtime.InteropServices;
+
+namespace ECSLib.Components;
 
 /// <summary>
 /// Stores and manages multiple component arrays.
@@ -7,15 +9,15 @@ internal class ComponentCollectionSet
 {
     private const int ComponentCountIncrement = 100;
 
-    private readonly Dictionary<Type, ComponentCollection> _typeToComponents;
-    private int _maxCount = ComponentCountIncrement;
+    private readonly Dictionary<Type, byte[]> _typeToComponents;
+    private int _maxCount;
     private int _count;
-    
-    private bool IsFull => _count == _maxCount;
+    private bool IsFull => _count == _maxCount; 
     
     public ComponentCollectionSet(IEnumerable<Type> types)
     {
-        _typeToComponents = types.ToDictionary(t => t, t => new ComponentCollection(t, ComponentCountIncrement));
+        _typeToComponents = types.ToDictionary(t => t, t => new byte[ComponentCountIncrement * Marshal.SizeOf(t)]);
+        _maxCount = ComponentCountIncrement;
     }
     
     /// <returns>
@@ -24,7 +26,8 @@ internal class ComponentCollectionSet
     /// </returns>
     public ref TComponent Get<TComponent>(int index) where TComponent : struct
     {
-        return ref _typeToComponents[typeof(TComponent)].GetSpanAt<TComponent>(index)[0];
+        var array = _typeToComponents[typeof(TComponent)];
+        return ref MemoryMarshal.Cast<byte, TComponent>(array)[index];
     }
     
     /// <summary>
@@ -33,10 +36,7 @@ internal class ComponentCollectionSet
     /// <returns>The index of the allocated space for the component.</returns>
     public int RegisterNew()
     {
-        if (IsFull)
-        {
-            Expand();
-        }
+        if (IsFull) Expand();
         _count++;
         return _count - 1;
     }
@@ -47,30 +47,34 @@ internal class ComponentCollectionSet
     {
         //Fill the position at index and clear the last in the array
         int lastCompIndex = _count - 1;
-        foreach (var componentArray in _typeToComponents.Values)
+        foreach (var pair in _typeToComponents)
         {
+            int size = Marshal.SizeOf(pair.Key);
+            var fullSpan = pair.Value.AsSpan();
+            var lastSpan = fullSpan.Slice(lastCompIndex * size, size);
             // If the empty position is at the end of the array, we do not need to fill it up, just clear at the end.
             if (index != lastCompIndex)
             {
-                var lastSpan = componentArray.GetByteSpanAt(lastCompIndex);
-                lastSpan.CopyTo(componentArray.GetByteSpanAt(index));
-                lastSpan.Clear();
+                var indexSpan = fullSpan.Slice(index * size, size);
+                lastSpan.CopyTo(indexSpan);
             }
-            componentArray.GetByteSpanAt(lastCompIndex).Clear();
+            lastSpan.Clear();
         }
         _count--;
-        return index != lastCompIndex ?  lastCompIndex : -1;
+        return index != lastCompIndex ? lastCompIndex : -1;
     }
-
-
+    
     /// <summary>
     /// Expands the component array by <see cref="ComponentCountIncrement"/>.
     /// </summary>
     private void Expand()
     {
-        foreach (var componentArray in _typeToComponents.Values)
+        foreach (var pair in _typeToComponents)
         {
-            componentArray.Resize(ComponentCountIncrement);
+            int size = Marshal.SizeOf(pair.Key);
+            var array = pair.Value;
+            Array.Resize(ref array, array.Length + ComponentCountIncrement * size);
+            _typeToComponents[pair.Key] = array;
         }
         _maxCount += ComponentCountIncrement;
     }
@@ -85,8 +89,9 @@ internal class ComponentCollectionSet
         {
             if (toSet._typeToComponents.TryGetValue(pair.Key, out var otherArray))
             {
-                var otherSpan = otherArray.GetByteSpanAt(toIndex);
-                var thisSpan = pair.Value.GetByteSpanAt(fromIndex);
+                int size = Marshal.SizeOf(pair.Key);
+                var otherSpan = otherArray.AsSpan(toIndex * size, size);
+                var thisSpan = pair.Value.AsSpan(fromIndex * size, size);
                 thisSpan.CopyTo(otherSpan);
             }
         }
