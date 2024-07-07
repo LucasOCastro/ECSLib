@@ -201,41 +201,46 @@ internal class ArchetypeManager
             ? indices
             : [];
 
-    /// <returns>
-    /// A new <see cref="HashSet{T}"/> with all archetype ids which contains all the componentTypes, and more.
-    /// </returns>
-    public HashSet<int> GetArchetypesWithAll(IEnumerable<Type> componentTypes) =>
-        componentTypes.Select(GetArchetypesWith).Intersection();
-
-    /// <returns>
-    /// A new <see cref="HashSet{T}"/> with all archetype ids which contains at least one type from componentTypes.
-    /// </returns>
-    public HashSet<int> GetArchetypesWithAny(IEnumerable<Type> componentTypes) =>
-        componentTypes.Select(GetArchetypesWith).Union();
-    
+    private readonly HashSet<int> _anySet = [];
     /// <returns>A new <see cref="HashSet{T}"/> with all archetype ids which match the query.</returns>
-    private HashSet<int> QueryArchetypes(Query query)
+    public void QueryArchetypes(Query query, HashSet<int> result)
     {
-        HashSet<int> result;
-        if (query.HasAll)
-        {
-            result = GetArchetypesWithAll(query.GetAll());
-            if (query.HasAny)
-                result.IntersectWith(GetArchetypesWithAny(query.GetAny()));   
-        }
-        else if (query.HasAny)
-        {
-            result = GetArchetypesWithAny(query.GetAny());
-        }
-        else return [];
+        if (query.All.Length == 0) return;
         
-        result.ExceptWith(GetArchetypesWithAny(query.GetNone()));
-        return result;
+        result.UnionWith(GetArchetypesWith(query.All[0]));
+        if (result.Count == 0) return;
+        for (int i = 1; i < query.All.Length; i++)
+        {
+            result.IntersectWith(GetArchetypesWith(query.All[i]));
+            if (result.Count == 0) return;
+        }
+
+        if (query.Any.Length > 0)
+        {
+            foreach (var type in query.Any)
+            {
+                _anySet.UnionWith(GetArchetypesWith(type));
+            }
+            result.IntersectWith(_anySet);
+            _anySet.Clear();
+            if (result.Count == 0) return;
+        }
+        
+        foreach (var type in query.None)
+        {
+            result.ExceptWith(GetArchetypesWith(type));
+            if (result.Count == 0) return;
+        }
     }
 
     /// <returns>All entities whose archetypes match the query.</returns>
-    public IEnumerable<Entity> QueryEntities(Query query) =>
-        QueryArchetypes(query).SelectMany(a => _archetypeIndexToEntities[a]);
+    public IEnumerable<Entity> QueryEntities(Query query)
+    {
+        //TODO bad
+        HashSet<int> result = [];
+        QueryArchetypes(query, result);
+        return result.SelectMany(a => _archetypeIndexToEntities[a]);
+    }
     
     #endregion
 }
