@@ -1,4 +1,6 @@
-﻿namespace ECSLib.Tests;
+﻿using ECSLib.Entities;
+
+namespace ECSLib.Tests;
 
 [Order(100)]
 public class StressTest
@@ -13,10 +15,10 @@ public class StressTest
         public int ValueInt;
     }
     
-    private const int ACompCount = 1;
-    private const int BCompCount = 1;
-    private const int ABCompCount = 1;
-    private const int NoCompCount = 0;
+    private const int ACompCount = 10000;
+    private const int BCompCount = 15280;
+    private const int ABCompCount = 12347;
+    private const int NoCompCount = 5422;
     private const int Iterations = 100;
     private const double ABaseValue = 9017.463;
     private const int BBaseValue = 40563;
@@ -37,7 +39,6 @@ public class StressTest
     [Test, Order(0)]
     public void Scenario1()
     {
-        var before = DateTime.Now;
         for (int i = 0; i < ACompCount; i++)
         {
             var entity = _world.CreateEntity();
@@ -63,40 +64,34 @@ public class StressTest
         }
         
         //Assert all components have the right values before systems process them
-        foreach (var entity in _world.Query(Query.All(typeof(TestComponentA))))
-            Assert.That(_world.GetComponent<TestComponentA>(entity).ValueDbl, Is.EqualTo(ABaseValue));
-        foreach (var entity in _world.Query(Query.All(typeof(TestComponentB))))
-            Assert.That(_world.GetComponent<TestComponentB>(entity).ValueInt, Is.EqualTo(BBaseValue));
-                
-        foreach (var entity in _world.Query(Query.All(typeof(TestComponentA))))
+        _world.Query(Query.With<TestComponentA>(),
+            (Entity _, ref TestComponentA a) => Assert.That(a.ValueDbl, Is.EqualTo(ABaseValue)));
+        _world.Query(Query.With<TestComponentB>(),
+            (Entity _, ref TestComponentB b) => Assert.That(b.ValueInt, Is.EqualTo(BBaseValue)));
+        
+        _world.Query(Query.With<TestComponentA>(), (Entity _, ref TestComponentA a) =>
         {
             for (int i = 0; i < Iterations; i++)
             {
-                ref var a = ref _world.GetComponent<TestComponentA>(entity);
                 a.ValueDbl = Math.Sqrt(a.ValueDbl);
             }
-        }
-                
-        foreach (var entity in _world.Query(Query.All(typeof(TestComponentB))))
+        });
+        
+        _world.Query(Query.With<TestComponentB>(), (Entity _, ref TestComponentB b) =>
         {
             for (int i = 0; i < Iterations; i++)
             {
-                ref var b = ref _world.GetComponent<TestComponentB>(entity);
                 b.ValueInt = b.ValueInt / ((int)Math.Sqrt(b.ValueInt) + 1) + 500;
             }
-        }
-                
-        foreach (var entity in _world.Query(Query.All(typeof(TestComponentA), typeof(TestComponentB))))
+        });
+        
+        _world.Query(Query.With<TestComponentA, TestComponentB>(), (Entity _, ref TestComponentA a, ref TestComponentB b) =>
         {
             for (int i = 0; i < Iterations; i++)
             {
-                ref var a = ref _world.GetComponent<TestComponentA>(entity);
-                ref var b = ref _world.GetComponent<TestComponentB>(entity);
                 b.ValueInt = b.ValueInt / ((int)Math.Sqrt(a.ValueDbl) + 1) + 500;
                 a.ValueDbl = b.ValueInt * 94.7f * Math.Sqrt(b.ValueInt);
             }
-        }
-        var after = DateTime.Now;
-        Console.Out.Write("Diff = " + (after - before).Milliseconds + "ms");
+        });
     }
 }

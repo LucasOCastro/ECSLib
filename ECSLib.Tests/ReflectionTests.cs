@@ -10,14 +10,9 @@ public class TestSystemReflection : BaseSystem
         public int Value;
     }
 
-    protected override Query GetQuery() => Query.All(typeof(TestComponent));
-
-    protected override void Process(float dt, ECS world, IEnumerable<Entity> entities)
+    public override void Process(float dt, ECS world)
     {
-        foreach (var entity in entities)
-        {
-            world.GetComponent<TestComponent>(entity).Value += 1;
-        }
+        world.Query(Query.With<TestComponent>(), (Entity entity, ref TestComponent comp) => comp.Value += 1);
     }
 }
 

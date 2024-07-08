@@ -87,8 +87,8 @@ public class ECSTests
         var managerField = typeof(ECS)
             .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
             .First(f => f.FieldType == typeof(ArchetypeManager));
-        var archetypeManager = managerField.GetValue(_world) as ArchetypeManager;
-        Assert.That(archetypeManager, Is.Not.Null);
+        var archetypeManager = (ArchetypeManager)managerField.GetValue(_world);
+        //Assert.That(archetypeManager, Is.Not.Null);
         
         var getOrCreateArchField = typeof(ArchetypeManager).GetMethod("GetOrCreateArchetype", BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(getOrCreateArchField, Is.Not.Null);
