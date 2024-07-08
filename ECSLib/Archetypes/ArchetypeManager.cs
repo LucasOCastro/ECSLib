@@ -136,7 +136,7 @@ internal class ArchetypeManager
     /// Stores a new component either by default value or with the value provided.
     /// </summary>
     /// <exception cref="DuplicatedComponentException">Thrown if tried to add a component the entity already has.</exception>
-    private void AddComponent(Entity entity, Type componentType)
+    public void AddComponent(Entity entity, Type componentType)
     {
         var oldComponents = GetAllComponentTypes(entity);
         var newComponents = oldComponents.Include(componentType);
@@ -185,7 +185,7 @@ internal class ArchetypeManager
         var record = _entitiesRecords[entity];
         if (!_archetypes[record.ArchetypeIndex].Definition.Components.Contains(typeof(TComponent)))
         {
-            throw new MissingComponentException(typeof(TComponent), entity);
+            throw new MissingComponentException(typeof(TComponent), entity); 
         }
         return ref _archetypes[record.ArchetypeIndex].Components.Get<TComponent>(record.EntityIndexInArchetype);
     }
@@ -196,7 +196,7 @@ internal class ArchetypeManager
     /// <returns>
     /// A new <see cref="HashSet{T}"/> with all archetype ids which contain the componentType.
     /// </returns>
-    public HashSet<int> GetArchetypesWith(Type componentType) =>
+    private HashSet<int> GetArchetypesWith(Type componentType) =>
         _componentTypeToArchetypeIndices.TryGetValue(componentType, out var indices)
             ? indices
             : [];
@@ -233,13 +233,153 @@ internal class ArchetypeManager
         }
     }
 
-    /// <returns>All entities whose archetypes match the query.</returns>
-    public IEnumerable<Entity> QueryEntities(Query query)
+    private readonly HashSet<int> _queryResultSet = [];
+    
+    public void Query(Query query, QueryAction action) 
     {
-        //TODO bad
-        HashSet<int> result = [];
-        QueryArchetypes(query, result);
-        return result.SelectMany(a => _archetypeIndexToEntities[a]);
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity);
+            }
+        }
+        _queryResultSet.Clear();
+    }
+    
+    public void Query<T1>(Query query, QueryAction<T1> action) 
+        where T1 : struct
+    {
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            var span1 = components.GetFullSpan<T1>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity, ref span1[i]);
+            }
+        }
+        _queryResultSet.Clear();
+    }
+
+    public void Query<T1, T2>(Query query, QueryAction<T1, T2> action) 
+        where T1 : struct
+        where T2 : struct
+    {
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            var span1 = components.GetFullSpan<T1>();
+            var span2 = components.GetFullSpan<T2>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity, ref span1[i], ref span2[i]);
+            }
+        }
+        _queryResultSet.Clear();
+    }
+
+    public void Query<T1, T2, T3>(Query query, QueryAction<T1, T2, T3> action) 
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+    {
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            var span1 = components.GetFullSpan<T1>();
+            var span2 = components.GetFullSpan<T2>();
+            var span3 = components.GetFullSpan<T3>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity, ref span1[i], ref span2[i], ref span3[i]);
+            }
+        }
+        _queryResultSet.Clear();
+    }
+
+    public void Query<T1, T2, T3, T4>(Query query, QueryAction<T1, T2, T3, T4> action) 
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        where T4 : struct
+    {
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            var span1 = components.GetFullSpan<T1>();
+            var span2 = components.GetFullSpan<T2>();
+            var span3 = components.GetFullSpan<T3>();
+            var span4 = components.GetFullSpan<T4>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity, ref span1[i], ref span2[i], ref span3[i], ref span4[i]);
+            }
+        }
+        _queryResultSet.Clear();
+    }
+
+    public void Query<T1, T2, T3, T4, T5>(Query query, QueryAction<T1, T2, T3, T4, T5> action) 
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        where T4 : struct
+        where T5 : struct
+    {
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            var span1 = components.GetFullSpan<T1>();
+            var span2 = components.GetFullSpan<T2>();
+            var span3 = components.GetFullSpan<T3>();
+            var span4 = components.GetFullSpan<T4>();
+            var span5 = components.GetFullSpan<T5>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity, ref span1[i], ref span2[i], ref span3[i], ref span4[i], ref span5[i]);
+            }
+        }
+        _queryResultSet.Clear();
+    }
+
+    public void Query<T1, T2, T3, T4, T5, T6>(Query query, QueryAction<T1, T2, T3, T4, T5, T6> action) 
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        where T4 : struct
+        where T5 : struct
+        where T6 : struct
+    {
+        QueryArchetypes(query, _queryResultSet);
+        foreach (var archetype in _queryResultSet)
+        {
+            var components = _archetypes[archetype].Components;
+            var span1 = components.GetFullSpan<T1>();
+            var span2 = components.GetFullSpan<T2>();
+            var span3 = components.GetFullSpan<T3>();
+            var span4 = components.GetFullSpan<T4>();
+            var span5 = components.GetFullSpan<T5>();
+            var span6 = components.GetFullSpan<T6>();
+            for (int i = 0; i < components.Count; i++)
+            {
+                var entity = _entitiesRecords[new ArchetypeRecord(archetype, i)];
+                action(entity, ref span1[i], ref span2[i], ref span3[i], ref span4[i], ref span5[i], ref span6[i]);
+            }
+        }
+        _queryResultSet.Clear();
     }
     
     #endregion

@@ -11,14 +11,17 @@ internal class ComponentCollectionSet
 
     private readonly Dictionary<Type, byte[]> _typeToComponents;
     private int _maxCount;
-    private int _count;
-    private bool IsFull => _count == _maxCount; 
+    public int Count { get; private set; }
+    private bool IsFull => Count == _maxCount; 
     
     public ComponentCollectionSet(IEnumerable<Type> types)
     {
         _typeToComponents = types.ToDictionary(t => t, t => new byte[ComponentCountIncrement * Marshal.SizeOf(t)]);
         _maxCount = ComponentCountIncrement;
     }
+    
+    /// <returns>The span of the entire component array for a certain component type.</returns>
+    public Span<T> GetFullSpan<T>() where T: struct => MemoryMarshal.Cast<byte, T>(_typeToComponents[typeof(T)].AsSpan());
     
     /// <returns>
     /// A reference to the component.
@@ -37,8 +40,8 @@ internal class ComponentCollectionSet
     public int RegisterNew()
     {
         if (IsFull) Expand();
-        _count++;
-        return _count - 1;
+        Count++;
+        return Count - 1;
     }
 
     /// <summary> Removes the component at the index and fills up the empty spot. </summary>
@@ -46,7 +49,7 @@ internal class ComponentCollectionSet
     public int FreePosition(int index)
     {
         //Fill the position at index and clear the last in the array
-        int lastCompIndex = _count - 1;
+        int lastCompIndex = Count - 1;
         foreach (var pair in _typeToComponents)
         {
             int size = Marshal.SizeOf(pair.Key);
@@ -60,7 +63,7 @@ internal class ComponentCollectionSet
             }
             lastSpan.Clear();
         }
-        _count--;
+        Count--;
         return index != lastCompIndex ? lastCompIndex : -1;
     }
     

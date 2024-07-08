@@ -66,9 +66,6 @@ public class ECS
         _archetypeManager.RemoveComponent<TComponent>(entity);
     }
 
-    /// <inheritdoc cref="ArchetypeManager.QueryEntities"/>
-    public IEnumerable<Entity> Query(Query query) => _archetypeManager.QueryEntities(query);
-
     #endregion
 
     #region  SYSTEMS
@@ -82,6 +79,52 @@ public class ECS
     
     /// <inheritdoc cref="SystemManager.Process"/>
     public void ProcessSystems(float dt) => _systemManager.Process(dt, this);
+    
+    #endregion
+    
+    #region QUERYING
+
+    public void Query(Query query, QueryAction action) 
+        => _archetypeManager.Query(query, action);
+    
+    public void Query<T1>(Query query, QueryAction<T1> action)
+        where T1 : struct
+        => _archetypeManager.Query(query, action);
+
+    public void Query<T1, T2>(Query query, QueryAction<T1, T2> action)
+        where T1 : struct
+        where T2 : struct
+        => _archetypeManager.Query(query, action);
+
+    public void Query<T1, T2, T3>(Query query, QueryAction<T1, T2, T3> action)
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        => _archetypeManager.Query(query, action);
+
+    public void Query<T1, T2, T3, T4>(Query query, QueryAction<T1, T2, T3, T4> action)
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        where T4 : struct
+        => _archetypeManager.Query(query, action);
+
+    public void Query<T1, T2, T3, T4, T5>(Query query, QueryAction<T1, T2, T3, T4, T5> action)
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        where T4 : struct
+        where T5 : struct
+        => _archetypeManager.Query(query, action);
+
+    public void Query<T1, T2, T3, T4, T5, T6>(Query query, QueryAction<T1, T2, T3, T4, T5, T6> action)
+        where T1 : struct
+        where T2 : struct
+        where T3 : struct
+        where T4 : struct
+        where T5 : struct
+        where T6 : struct
+        => _archetypeManager.Query(query, action);
     
     #endregion
 }
