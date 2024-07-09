@@ -1,4 +1,5 @@
-﻿using ECSLib.Entities;
+﻿using ECSLib.Components;
+using ECSLib.Entities;
 
 namespace ECSLib.Tests;
 
@@ -65,32 +66,32 @@ public class StressTest
         
         //Assert all components have the right values before systems process them
         _world.Query(Query.With<TestComponentA>(),
-            (Entity _, ref TestComponentA a) => Assert.That(a.ValueDbl, Is.EqualTo(ABaseValue)));
+            (Entity _, ref Comp<TestComponentA> a) => Assert.That(a.Value.ValueDbl, Is.EqualTo(ABaseValue)));
         _world.Query(Query.With<TestComponentB>(),
-            (Entity _, ref TestComponentB b) => Assert.That(b.ValueInt, Is.EqualTo(BBaseValue)));
+            (Entity _, ref Comp<TestComponentB> b) => Assert.That(b.Value.ValueInt, Is.EqualTo(BBaseValue)));
         
-        _world.Query(Query.With<TestComponentA>(), (Entity _, ref TestComponentA a) =>
+        _world.Query(Query.With<TestComponentA>(), (Entity _, ref Comp<TestComponentA> a) =>
         {
             for (int i = 0; i < Iterations; i++)
             {
-                a.ValueDbl = Math.Sqrt(a.ValueDbl);
+                a.Value.ValueDbl = Math.Sqrt(a.Value.ValueDbl);
             }
         });
         
-        _world.Query(Query.With<TestComponentB>(), (Entity _, ref TestComponentB b) =>
+        _world.Query(Query.With<TestComponentB>(), (Entity _, ref Comp<TestComponentB> b) =>
         {
             for (int i = 0; i < Iterations; i++)
             {
-                b.ValueInt = b.ValueInt / ((int)Math.Sqrt(b.ValueInt) + 1) + 500;
+                b.Value.ValueInt = b.Value.ValueInt / ((int)Math.Sqrt(b.Value.ValueInt) + 1) + 500;
             }
         });
         
-        _world.Query(Query.With<TestComponentA, TestComponentB>(), (Entity _, ref TestComponentA a, ref TestComponentB b) =>
+        _world.Query(Query.With<TestComponentA, TestComponentB>(), (Entity _, ref Comp<TestComponentA> a, ref Comp<TestComponentB> b) =>
         {
             for (int i = 0; i < Iterations; i++)
             {
-                b.ValueInt = b.ValueInt / ((int)Math.Sqrt(a.ValueDbl) + 1) + 500;
-                a.ValueDbl = b.ValueInt * 94.7f * Math.Sqrt(b.ValueInt);
+                b.Value.ValueInt = b.Value.ValueInt / ((int)Math.Sqrt(a.Value.ValueDbl) + 1) + 500;
+                a.Value.ValueDbl = b.Value.ValueInt * 94.7f * Math.Sqrt(b.Value.ValueInt);
             }
         });
     }

@@ -1,4 +1,5 @@
-﻿using ECSLib.Entities;
+﻿using ECSLib.Components;
+using ECSLib.Entities;
 using ECSLib.Systems;
 using ECSLib.Systems.Exceptions;
 
@@ -84,7 +85,7 @@ public class QuerySystemTests
     {
         public override void Process(float dt, ECS world)
         {
-            world.Query(Query.With<TestComponentA>(), (Entity _, ref TestComponentA a) => a.ValueInt += 1);
+            world.Query(Query.With<TestComponentA>(), (Entity _, ref Comp<TestComponentA> a) => a.Value.ValueInt += 1);
         }
     }
 
@@ -92,7 +93,7 @@ public class QuerySystemTests
     {
         public override void Process(float dt, ECS world)
         {
-            world.Query(Query.With<TestComponentB>(), (Entity _, ref TestComponentB b) => b.ValueDbl *= 1.5);
+            world.Query(Query.With<TestComponentB>(), (Entity _, ref Comp<TestComponentB> b) => b.Value.ValueDbl *= 1.5);
         }
     }
     
@@ -101,10 +102,10 @@ public class QuerySystemTests
         public override void Process(float dt, ECS world)
         {
             world.Query(Query.With<TestComponentA, TestComponentB>(),
-                (Entity _, ref TestComponentA a, ref TestComponentB b) =>
+                (Entity _, ref Comp<TestComponentA> a, ref Comp<TestComponentB> b) =>
                 {
-                    a.ValueInt = 0;
-                    b.ValueDbl = 0;
+                    a.Value.ValueInt = 0;
+                    b.Value.ValueDbl = 0;
                 });
         }
     }

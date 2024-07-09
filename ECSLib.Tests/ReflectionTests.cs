@@ -1,4 +1,5 @@
-﻿using ECSLib.Entities;
+﻿using ECSLib.Components;
+using ECSLib.Entities;
 using ECSLib.Systems;
 
 namespace ECSLib.Tests;
@@ -12,7 +13,7 @@ public class TestSystemReflection : BaseSystem
 
     public override void Process(float dt, ECS world)
     {
-        world.Query(Query.With<TestComponent>(), (Entity entity, ref TestComponent comp) => comp.Value += 1);
+        world.Query(Query.With<TestComponent>(), (Entity entity, ref Comp<TestComponent> comp) => comp.Value.Value += 1);
     }
 }
 
