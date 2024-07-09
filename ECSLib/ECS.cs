@@ -5,7 +5,7 @@ using ECSLib.Systems;
 
 namespace ECSLib;
 
-public class ECS
+public sealed class ECS
 {
     private readonly EntityManager _entityManager = new();
     private readonly ArchetypeManager _archetypeManager = new();
