@@ -19,9 +19,14 @@ internal class ComponentCollectionSet
         _typeToComponents = types.ToDictionary(t => t, t => new byte[ComponentCountIncrement * Marshal.SizeOf(t)]);
         _maxCount = ComponentCountIncrement;
     }
-    
-    /// <returns>The span of the entire component array for a certain component type.</returns>
-    public Span<T> GetFullSpan<T>() where T: struct => MemoryMarshal.Cast<byte, T>(_typeToComponents[typeof(T)].AsSpan());
+
+    /// <returns>
+    /// The span of the entire component array for a certain component type, or empty if the component is missing.
+    /// </returns>
+    public Span<T> GetFullSpan<T>() where T : struct =>
+        _typeToComponents.TryGetValue(typeof(T), out var byteArray)
+            ? MemoryMarshal.Cast<byte, T>(byteArray.AsSpan())
+            : Span<T>.Empty;
     
     /// <returns>
     /// A reference to the component.
