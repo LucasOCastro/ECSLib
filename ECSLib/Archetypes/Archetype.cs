@@ -9,10 +9,12 @@ internal readonly struct Archetype
 {
     public ArchetypeDefinition Definition { get; }
     public ComponentCollectionSet Components { get; }
+    public Dictionary<ArchetypeEdge, int> Edges { get; }
     
     public Archetype(ArchetypeDefinition definition)
     {
         Definition = definition;
         Components = new(definition.Components);
+        Edges = new();
     }
 }

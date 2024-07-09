@@ -9,7 +9,7 @@ internal readonly struct ArchetypeDefinition : IEquatable<ArchetypeDefinition>
 {
     public IReadOnlySet<Type> Components { get; } = new HashSet<Type>();
     
-    public ArchetypeDefinition(IReadOnlyCollection<Type> types)
+    public ArchetypeDefinition(IEnumerable<Type> types)
     {
         Components = new HashSet<Type>(types);
     }

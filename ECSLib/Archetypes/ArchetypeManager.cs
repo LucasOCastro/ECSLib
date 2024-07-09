@@ -52,7 +52,7 @@ internal class ArchetypeManager
     /// Otherwise, register a new archetype and return the newly registered id.
     /// </summary>
     /// <returns>The id to the unique archetype for the <see cref="componentTypes"/> collection.</returns>
-    private int GetOrCreateArchetype(IReadOnlyCollection<Type> componentTypes)
+    private int GetOrCreateArchetype(IEnumerable<Type> componentTypes)
     {
         ArchetypeDefinition targetDef = new(componentTypes);
         if (_archetypeDefinitionToIndex.TryGetValue(targetDef, out int index))
@@ -70,6 +70,30 @@ internal class ArchetypeManager
         }
         _archetypes.Add(new(targetDef));
         return index;
+    }
+    
+    /// <summary>
+    /// Gets an archetype from an added or removed component type coming from an existing archetype,
+    /// following the archetype graph or registering a new edge.
+    /// </summary>
+    /// <param name="archetype">The original archetype.</param>
+    /// <param name="componentType">The new component which was added or removed form the original archetype.</param>
+    /// <param name="add">Whether the component was added or removed from the original archetype.</param>
+    /// <returns></returns>
+    private int GetOrCreateArchetypeFrom(int archetype, Type componentType, bool add)
+    {
+        ArchetypeEdge edge = add ? new(componentType, null) : new(null, componentType);
+
+        if (_archetypes[archetype].Edges.TryGetValue(edge, out var newArchetype))
+        {
+            return newArchetype;
+        }
+        
+        var oldComponents = _archetypes[archetype].Definition.Components;
+        var newComponents = add ? oldComponents.Append(componentType) : oldComponents.Except(componentType);
+        newArchetype = GetOrCreateArchetype(newComponents);
+        _archetypes[archetype].Edges.Add(edge, newArchetype);
+        return newArchetype;
     }
     
     /// <summary>
@@ -138,14 +162,13 @@ internal class ArchetypeManager
     /// <exception cref="DuplicatedComponentException">Thrown if tried to add a component the entity already has.</exception>
     public void AddComponent(Entity entity, Type componentType)
     {
-        var oldComponents = GetAllComponentTypes(entity);
-        var newComponents = oldComponents.Include(componentType);
-        if (oldComponents.SetEquals(newComponents))
+        var oldArchetype = _entitiesRecords[entity].ArchetypeIndex;
+        if (_archetypes[oldArchetype].Definition.Components.Contains(componentType))
         {
             throw new DuplicatedComponentException(componentType, entity);
         }
 
-        var newArchetype = GetOrCreateArchetype(newComponents);
+        var newArchetype = GetOrCreateArchetypeFrom(oldArchetype, componentType, add: true);
         MoveEntityTo(entity, newArchetype);
     }
     
@@ -163,14 +186,13 @@ internal class ArchetypeManager
     /// <exception cref="MissingComponentException">Thrown if tried to remove a component not registered to the entity.</exception>
     public void RemoveComponent(Entity entity, Type componentType)
     {
-        var oldComponents = GetAllComponentTypes(entity);
-        var newComponents = oldComponents.Except(componentType);
-        if (oldComponents.SetEquals(newComponents))
+        var oldArchetype = _entitiesRecords[entity].ArchetypeIndex;
+        if (!_archetypes[oldArchetype].Definition.Components.Contains(componentType))
         {
             throw new MissingComponentException(componentType, entity);
         }
         
-        var newArchetype = GetOrCreateArchetype(newComponents);
+        var newArchetype = GetOrCreateArchetypeFrom(oldArchetype, componentType, add: false);
         MoveEntityTo(entity, newArchetype);
     }
 
