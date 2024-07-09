@@ -2,31 +2,51 @@
 
 public readonly struct Query
 {
-    private readonly Type[] _all = [];
-    private readonly Type[] _any = [];
-    private readonly Type[] _none = [];
+    internal readonly Type[] All = [];
+    internal readonly Type[] Any = [];
+    internal readonly Type[] None = [];
     
-    internal bool HasAll => _all.Length > 0;
-    internal IEnumerable<Type> GetAll() => _all;
-    
-    internal bool HasAny => _any.Length > 0;
-    internal IEnumerable<Type> GetAny() => _any;
-    
-    internal bool HasNone => _none.Length > 0;
-    internal IEnumerable<Type> GetNone() => _none;
-
     private Query(Type[] all, Type[] any, Type[] none)
     {
-        _all = all;
-        _any = any;
-        _none = none;
+        All = all;
+        Any = any;
+        None = none;
     }
-
-    public Query WithAll(params Type[] types) => new(types.ToArray(), _any, _none);
-    public Query WithAny(params Type[] types) => new(_all, types.ToArray(), _none);
-    public Query WithNone(params Type[] types) => new(_all, _any, types.ToArray());
-
-    public static Query All(params Type[] types) => new(types.ToArray(), [], []);
-    public static Query Any(params Type[] types) => new([], types.ToArray(), []);
-    public static Query None(params Type[] types) => new([], [], types.ToArray());
+    
+    #region ALL
+    
+    public static Query With(params Type[] types) => new(types, [], []);
+    public static Query With<T1>() => With(typeof(T1));
+    public static Query With<T1, T2>() => With(typeof(T1), typeof(T2));
+    public static Query With<T1, T2, T3>() => With(typeof(T1), typeof(T2), typeof(T3));
+    public static Query With<T1, T2, T3, T4>() => With(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+    public static Query With<T1, T2, T3, T4, T5>() => With(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+    public static Query With<T1, T2, T3, T4, T5, T6>() => With(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+    
+    #endregion
+    
+    #region ANY
+    
+    public Query WithAny(params Type[] types) => new(All, types, None);
+    public Query WithAny<T1>() => WithAny(typeof(T1));
+    public Query WithAny<T1, T2>() => WithAny(typeof(T1), typeof(T2));
+    public Query WithAny<T1, T2, T3>() => WithAny(typeof(T1), typeof(T2), typeof(T3));
+    public Query WithAny<T1, T2, T3, T4>() => WithAny(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+    public Query WithAny<T1, T2, T3, T4, T5>() => WithAny(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+    public Query WithAny<T1, T2, T3, T4, T5, T6>() => WithAny(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+    
+    #endregion
+    
+    
+    #region NONE
+    
+    public Query WithNone(params Type[] types) => new(All, Any, types);
+    public Query WithNone<T1>() => WithNone(typeof(T1));
+    public Query WithNone<T1, T2>() => WithNone(typeof(T1), typeof(T2));
+    public Query WithNone<T1, T2, T3>() => WithNone(typeof(T1), typeof(T2), typeof(T3));
+    public Query WithNone<T1, T2, T3, T4>() => WithNone(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+    public Query WithNone<T1, T2, T3, T4, T5>() => WithNone(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+    public Query WithNone<T1, T2, T3, T4, T5, T6>() => WithNone(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+    
+    #endregion
 }

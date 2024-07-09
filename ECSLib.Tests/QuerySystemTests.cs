@@ -52,68 +52,65 @@ public class QuerySystemTests
         var entityE = _world.CreateEntity();
         Assert.Multiple(() =>
         {
+            List<Entity> resultList = [];
             //Query by component A and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentA))).ToHashSet().SetEquals([entityA, entityB, entityC]));
-
+            _world.Query(Query.With<TestComponentA>(), entity => resultList.Add(entity));
+            Assert.That(resultList, Is.EquivalentTo(new[]{entityA, entityB, entityC}));
+            resultList.Clear();
+            
             //Query by component B and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentB))).ToHashSet().SetEquals([entityC, entityD]));
+            _world.Query(Query.With<TestComponentB>(), entity => resultList.Add(entity));
+            Assert.That(resultList, Is.EquivalentTo(new[]{entityC, entityD}));
+            resultList.Clear();
 
             //Query by component A and B and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentB), typeof(TestComponentA))).ToHashSet().SetEquals([entityC]));
-
-            //Query by component A or component B and assert the result
-            Assert.That(_world.Query(Query.Any(typeof(TestComponentA), typeof(TestComponentB))).ToHashSet().SetEquals([entityA, entityB, entityC, entityD]));
+            _world.Query(Query.With<TestComponentA, TestComponentB>(), entity => resultList.Add(entity));
+            Assert.That(resultList, Is.EquivalentTo(new[]{entityC}));
+            resultList.Clear();
 
             //Query by component A and not component B and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentA)).WithNone(typeof(TestComponentB))).ToHashSet().SetEquals([entityA, entityB]));
+            _world.Query(Query.With<TestComponentA>().WithNone<TestComponentB>(), entity => resultList.Add(entity));
+            Assert.That(resultList, Is.EquivalentTo(new[]{entityA, entityB}));
+            resultList.Clear();
 
             //Query by component B and not component A and assert the result
-            Assert.That(_world.Query(Query.All(typeof(TestComponentB)).WithNone(typeof(TestComponentA))).ToHashSet().SetEquals([entityD]));
+            _world.Query(Query.With<TestComponentB>().WithNone<TestComponentA>(), entity => resultList.Add(entity));
+            Assert.That(resultList, Is.EquivalentTo(new[]{entityD}));
+            resultList.Clear();
         });
     }
 
     private class TestSystemA : BaseSystem
     {
-        protected override Query GetQuery() => Query.All(typeof(TestComponentA));
-
-        protected override void Process(float dt, ECS world, IEnumerable<Entity> entities)
+        public override void Process(float dt, ECS world)
         {
-            foreach (var entity in entities)
-            {
-                world.GetComponent<TestComponentA>(entity).ValueInt += 1;
-            }
+            world.Query(Query.With<TestComponentA>(), (Entity _, ref TestComponentA a) => a.ValueInt += 1);
         }
     }
 
     private class TestSystemB : BaseSystem
     {
-        protected override Query GetQuery() => Query.All(typeof(TestComponentB));
-
-        protected override void Process(float dt, ECS world, IEnumerable<Entity> entities)
+        public override void Process(float dt, ECS world)
         {
-            foreach (var entity in entities)
-            {
-                world.GetComponent<TestComponentB>(entity).ValueDbl *= 1.5;
-            }
+            world.Query(Query.With<TestComponentB>(), (Entity _, ref TestComponentB b) => b.ValueDbl *= 1.5);
         }
     }
     
     private class TestSystemAB : BaseSystem
     {
-        protected override Query GetQuery() => Query.All(typeof(TestComponentA), typeof(TestComponentB));
-
-        protected override void Process(float dt, ECS world, IEnumerable<Entity> entities)
+        public override void Process(float dt, ECS world)
         {
-            foreach (var entity in entities)
-            {
-                world.GetComponent<TestComponentA>(entity).ValueInt = 0;
-                world.GetComponent<TestComponentB>(entity).ValueDbl = 0;
-            }
+            world.Query(Query.With<TestComponentA, TestComponentB>(),
+                (Entity _, ref TestComponentA a, ref TestComponentB b) =>
+                {
+                    a.ValueInt = 0;
+                    b.ValueDbl = 0;
+                });
         }
     }
     
     [Test, Order(4)]
-    public void TestSystems()
+     public void TestSystems()
     {
         //Create one entity with TestComponentA
         var entityA = _world.CreateEntity();
