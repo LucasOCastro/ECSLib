@@ -15,7 +15,7 @@ public class ClassStringBuilder
     private int _level;
     private readonly StringBuilder _indent = new();
 
-    public ClassStringBuilder(ICollection<string> namespaces, string className, string access = "public")
+    public ClassStringBuilder(ICollection<string> namespaces, string className)
     {
         foreach (var name in namespaces)
         {
@@ -23,8 +23,7 @@ public class ClassStringBuilder
             _builder.Append(name);
             Open();
         }
-        PushLine(access);
-        _builder.Append(" partial class ");
+        PushLine("partial class ");
         _builder.Append(className);
         Open();
     }
