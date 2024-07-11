@@ -38,18 +38,15 @@ public class ClassStringBuilder
     /// <summary> Adds a correctly indented line. </summary>
     public void PushLine(string line)
     {
-        BeginLine();
-        _builder.AppendLine(line);
+        InitLine();
+        _builder.Append(line);
     }
 
-    /// <summary> Begins a new line with correct indentation. </summary>
-    public void BeginLine() => _builder.Append(_indent);
-
-    /// <summary> Begins a new line by breaking the current line and inserting the correct indentation in the next. </summary>
-    public void BeginNewLine()
+    /// <summary> If in a line, break first. Then initializes the current line with correct indentation. </summary>
+    private void InitLine()
     {
         _builder.AppendLine();
-        BeginLine();
+        _builder.Append(_indent);
     }
     
     /// <summary> Appends the provided string directly. </summary>
@@ -59,29 +56,46 @@ public class ClassStringBuilder
     /// Appends an instruction to define a new variable with name '<see cref="varName"/>' and
     /// assign its value to the return of '<see cref="methodName"/>', then breaks the line.
     /// </summary>
-    public void PushAssignmentToMethod(string varName, string methodName, params string[] args)
+    public void PushAssignmentFromMethod(string varName, string methodName, params string[] args)
     {
+        InitLine();
         _builder.Append("var ");
         _builder.Append(varName);
         _builder.Append(" = ");
-        PushMethodInvocation(methodName, args);
+        PushMethodInvocationInline(methodName, args);
     }
 
-    /// <summary> Appends the invocation of a method and breaks the line. </summary>
-    public void PushMethodInvocation(string methodName, params string[] args)
+    /// <summary> Appends the invocation of a method. </summary>
+    public void PushMethodInvocationInline(string methodName, params string[] args)
     {
         _builder.Append(methodName);
         PushArgumentList(args);
-        _builder.AppendLine(";");
+        _builder.Append(";");
     }
     
-    /// <summary> Appends the invocation of a generic method and breaks the line. </summary>
-    public void PushGenericMethodInvocation(string methodName, IEnumerable<string> genericArguments, params string[] args)
+    /// <summary> Begins a new line and appends the invocation of a method. </summary>
+    public void PushMethodInvocation(string methodName, params string[] args)
+    {
+        InitLine();
+        PushMethodInvocationInline(methodName, args);
+    }
+    
+    
+    
+    /// <summary> Appends the invocation of a generic method. </summary>
+    public void PushGenericMethodInvocationInline(string methodName, IEnumerable<string> genericArguments, params string[] args)
     {
         _builder.Append(methodName);
         PushGenericArgumentList(genericArguments);
         PushArgumentList(args);
-        _builder.AppendLine(";");
+        _builder.Append(";");
+    }
+    
+    /// <summary> Begins a new line and appends the invocation of a generic method. </summary>
+    public void PushGenericMethodInvocation(string methodName, IEnumerable<string> genericArguments, params string[] args)
+    {
+        InitLine();
+        PushGenericMethodInvocationInline(methodName, genericArguments, args);
     }
 
     /// <summary> Appends a (arg1, arg2, ...) block with the provided arguments. </summary>
@@ -125,15 +139,14 @@ public class ClassStringBuilder
         _level--;
         _indent.Remove(_indent.Length - Tab.Length, Tab.Length);
     }
-
     
     /// <summary>
     /// Opens a '{' block.
     /// </summary>
     public void Open(string opener = "{")
     {
-        _builder.Append(_indent);
-        _builder.AppendLine(opener);
+        InitLine();
+        _builder.Append(opener);
         IncreaseLevel();
     }
 
@@ -143,9 +156,9 @@ public class ClassStringBuilder
     /// </summary>
     public void Open(string prefix, string name)
     {
-        _builder.Append(_indent);
+        InitLine();
         _builder.Append(prefix);
-        _builder.AppendLine(name);
+        _builder.Append(name);
         Open();
     }
 
@@ -155,7 +168,7 @@ public class ClassStringBuilder
     public void Close(string closer = "}")
     {
         DecreaseLevel();
-        _builder.Append(_indent);
-        _builder.AppendLine(closer);
+        InitLine();
+        _builder.Append(closer);
     }
 }
