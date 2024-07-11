@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using CSharpExtensions = Microsoft.CodeAnalysis.CSharpExtensions;
 
 namespace ECSLib.SourceGen.Utilities;
 
@@ -24,5 +24,29 @@ internal static class SymbolExtension
             yield return parentNamespace;
             parentNamespace = parentNamespace.ContainingNamespace;
         }
+    }
+
+    private static bool IsRootNamespace(ISymbol? symbol) => symbol is INamespaceSymbol { IsGlobalNamespace: true }; 
+    public static string GetFullMetadataName(this ISymbol? symbol)
+    {
+        if (symbol == null || IsRootNamespace(symbol))
+        {
+            return string.Empty;
+        }
+
+        StringBuilder sb = new(symbol.MetadataName);
+        var lastSymbol = symbol;
+        symbol = symbol.ContainingSymbol;
+        while (!IsRootNamespace(symbol))
+        {
+            if (symbol is ITypeSymbol && lastSymbol is ITypeSymbol)
+                sb.Insert(0, '+');
+            else
+                sb.Insert(0, '.');
+            sb.Insert(0, symbol.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
+            symbol = symbol.ContainingSymbol;
+        }
+
+        return sb.ToString();
     }
 }
