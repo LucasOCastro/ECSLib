@@ -78,7 +78,7 @@ public sealed class ECS
     
     
     /// <inheritdoc cref="SystemManager.Process"/>
-    public void ProcessSystems(float dt) => _systemManager.Process(dt, this);
+    public void ProcessSystems(float dt) => _systemManager.Process(this);
     
     #endregion
     

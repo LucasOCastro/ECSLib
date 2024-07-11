@@ -25,13 +25,12 @@ internal class SystemManager
     /// <summary>
     /// Updates all the registered systems.
     /// </summary>
-    /// <param name="dt">Delta time elapsed from the last frame.</param>
     /// <param name="world">The ECS world the entities belong to.</param>
-    public void Process(float dt, ECS world)
+    public void Process(ECS world)
     {
         foreach (var system in _systems)
         {
-            system.Process(dt, world);
+            system.Process(world);
         }
     }
 }
