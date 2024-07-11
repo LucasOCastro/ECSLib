@@ -16,7 +16,7 @@ internal static class SymbolExtension
     /// <returns>
     /// The containing namespace symbols, from closest to furthest.
     /// </returns>
-    public static IEnumerable<INamespaceOrTypeSymbol> GetParentNamespaces(this ISymbol symbol)
+    public static IEnumerable<INamespaceOrTypeSymbol> GetContainingNamespaces(this ISymbol symbol)
     {
         var parentNamespace = symbol.ContainingNamespace;
         while (parentNamespace != null && !string.IsNullOrEmpty(parentNamespace.MetadataName))

@@ -22,9 +22,21 @@ public static class Diagnostics
         $"Class with {attributeName} attribute must inherit {baseClassName}.",
         "Problem", DiagnosticSeverity.Error, true);
     
-    public static DiagnosticDescriptor SystemContainingClassError(string attributeName) => new(
+    public static DiagnosticDescriptor NestedClassError(string attributeName) => new(
         "ECSG001",
         "Invalid system class",
         $"Class with {attributeName} must not be nested.",
+        "Problem", DiagnosticSeverity.Error, true);
+    
+    public static DiagnosticDescriptor EntityParamOrderError() => new(
+        "ECSG002",
+        "Invalid system parameters",
+        "The entity parameter in an ECS system should come first.",
+        "Problem", DiagnosticSeverity.Error, true);
+    
+    public static DiagnosticDescriptor ParamRefStructError() => new(
+        "ECSG003",
+        "Invalid system parameters",
+        "The component parameter in an ECS must be a struct passed by reference.",
         "Problem", DiagnosticSeverity.Error, true);
 }
