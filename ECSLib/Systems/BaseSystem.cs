@@ -5,11 +5,10 @@ namespace ECSLib.Systems;
 
 public abstract partial class BaseSystem
 {
-    protected Query QueryForMethod(string methodName)
+    protected static Query GenQueryForMethod(Type type, string methodName)
     {
-        //TODO cache
-        var method = GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (method == null) throw new MissingMethodException(GetType().Name, methodName);
+        var method = type.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (method == null) throw new MissingMethodException(type.Name, methodName);
         var attribute = method.GetCustomAttribute<ECSSystemAttribute>();
         if (attribute == null) throw new CustomAttributeFormatException();
         return attribute.GenQuery(method.GetParameters());

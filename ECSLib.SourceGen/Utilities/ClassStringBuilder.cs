@@ -58,13 +58,13 @@ public class ClassStringBuilder
     public void Push(string str) => _builder.Append(str);
 
     /// <summary>
-    /// Appends an instruction to define a new variable with name '<see cref="varName"/>' and
-    /// assign its value to the return of '<see cref="methodName"/>', then breaks the line.
+    /// Appends an instruction to assign a variable '<see cref="varName"/>' with
+    /// the return of '<see cref="methodName"/>'.
     /// </summary>
+    /// <remarks>If the variable was not defined yet, pass <see cref="varName"/> with 'var'.</remarks>
     public void PushAssignmentFromMethod(string varName, string methodName, params string[] args)
     {
         InitLine();
-        _builder.Append("var ");
         _builder.Append(varName);
         _builder.Append(" = ");
         PushMethodInvocationInline(methodName, args);

@@ -17,6 +17,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
     private const string CompRefUsableName = "ECSLib.Components.Comp<";
     private const string EntityStructName = "ECSLib.Entities.Entity";
     private const string ECSClassName = "ECSLib.ECS";
+    private const string QueryStructName = "ECSLib.Query";
     
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -147,7 +148,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             lambdaArgs.Append("> comp");
             lambdaArgs.Append(i);
 
-            if (methodArgs.Length > 0) methodArgs.Append(", ");
+            if (methodArgs.Length > 1) methodArgs.Append(", ");
             methodArgs.Append("ref comp");
             methodArgs.Append(i);
             if (!param.IsWrappedByComp) methodArgs.Append(".Value");
@@ -185,16 +186,25 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
         
         //Build the class
         ClassStringBuilder builder = new(source.Namespaces.Reverse().ToList(), source.ClassName);
+        
+        //Process method
         builder.OpenMethod("public override void", "Process", ECSClassName + " world");
         foreach (var method in source.Methods)
         {
-            builder.Open();
-            builder.PushAssignmentFromMethod("query", "QueryForMethod", $"nameof({method.MethodName})");
-            builder.PushGenericMethodInvocation("world.Query", method.Params.Select(p => p.Type), "query", GetLambdaFor(method));
-            builder.Close();
+            string queryFieldName = method.MethodName + "_query";
+            builder.PushGenericMethodInvocation("world.Query", method.Params.Select(p => p.Type), queryFieldName, GetLambdaFor(method));
         }
         builder.Close();
         
+        //Static query fields
+        foreach (var method in source.Methods)
+        {
+            string queryFieldName = "private static " + QueryStructName + ' ' + method.MethodName + "_query";
+            builder.PushAssignmentFromMethod(queryFieldName, "GenQueryForMethod", $"typeof({source.ClassName})",
+                $"\"{method.MethodName}\"");
+        }
+        
+        //Create the file
         string joinedNamespaces = source.Namespaces.DefaultIfEmpty().Aggregate((a, b) => a + '_' + b);
         spc.AddSource($"{joinedNamespaces}-{source.ClassName}.g.cs", builder.End());
     }
