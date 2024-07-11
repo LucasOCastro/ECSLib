@@ -7,14 +7,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ECSLib.SourceGen.RegisterSystems;
 
-internal readonly record struct ParamRecord(string Type, bool IsWrappedByComp);
-
-internal readonly record struct SystemMethodRecord(string MethodName, EquatableArray<ParamRecord> Params, bool HasEntityParam, DiagnosticRecord? Diagnostic);
-
-internal readonly record struct SystemClassRecord(EquatableArray<string> Namespaces, string ClassName, EquatableArray<SystemMethodRecord> Methods, DiagnosticRecord? Diagnostic);
-
 [Generator]
-internal class RegisterSystemMethodsSourceGenerator : IIncrementalGenerator
+internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
 {
     private const string BaseClassName = "ECSLib.Systems.BaseSystem";
     private const string SystemClassAttributeName = "ECSLib.Systems.Attributes.ECSSystemClassAttribute";
@@ -23,6 +17,66 @@ internal class RegisterSystemMethodsSourceGenerator : IIncrementalGenerator
     private const string CompRefUsableName = "ECSLib.Components.Comp<";
     private const string EntityStructName = "ECSLib.Entities.Entity";
     private const string ECSClassName = "ECSLib.ECS";
+    
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        var classProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
+            fullyQualifiedMetadataName: SystemClassAttributeName,
+            predicate: static (s, _) => s is ClassDeclarationSyntax,
+            static (ctx, _) => GetClassRecord(ctx))
+            .Where(x => x != null);
+        
+        context.RegisterSourceOutput(classProvider, static (spc, source) => Execute(source!.Value, spc));
+    }
+    
+    #region MODEL_EXTRACTION
+    
+    private static SystemClassRecord? GetClassRecord(GeneratorAttributeSyntaxContext context)
+    {
+        var classDef = (ClassDeclarationSyntax)context.TargetNode;
+        var symbol = (ITypeSymbol)context.TargetSymbol;
+
+        //ECS class must not be nested
+        if (symbol.ContainingType != null)
+        {
+            return new()
+            {
+                Diagnostic = new(Diagnostics.NestedClassError(SystemClassAttributeName), classDef.GetLocation())
+            };
+        }
+        
+        //ECS class must be partial
+        if (classDef.Modifiers.All(m => m.ToString() != "partial"))
+        {
+            return new()
+            {
+                Diagnostic = new(Diagnostics.SystemClassPartialError(SystemClassAttributeName), classDef.GetLocation())
+            };
+        }
+        
+        //ECS class must not be generic
+        if (symbol is INamedTypeSymbol { IsGenericType: true })
+        {
+            return new()
+            {
+                Diagnostic = new(Diagnostics.SystemClassGenericError(SystemClassAttributeName), classDef.GetLocation())
+            };
+        }
+        
+        //ECS class must inherit from base system class.
+        if (symbol.BaseType == null || symbol.BaseType.ToString() != BaseClassName)
+        {
+            return new()
+            {
+                Diagnostic = new(Diagnostics.SystemClassInheritError(SystemClassAttributeName, BaseClassName), 
+                    classDef.GetLocation())
+            };
+        }
+
+        var namespaces = symbol.GetContainingNamespaces().Select(n => n.Name);
+        var methods = symbol.GetMembers().OfType<IMethodSymbol>().Select(GetMethodRecord).OfType<SystemMethodRecord>();
+        return new(new(namespaces), symbol.Name, new(methods), null);
+    }
     
     private static SystemMethodRecord? GetMethodRecord(IMethodSymbol symbol)
     {
@@ -74,65 +128,11 @@ internal class RegisterSystemMethodsSourceGenerator : IIncrementalGenerator
         }
         return new(symbol.MetadataName, new(paramRecords), hasEntityParam, null);
     }
+
+    #endregion
     
-    private static SystemClassRecord? GetClassRecord(GeneratorAttributeSyntaxContext context)
-    {
-        var classDef = (ClassDeclarationSyntax)context.TargetNode;
-        var symbol = (ITypeSymbol)context.TargetSymbol;
-
-        //ECS class must not be nested
-        if (symbol.ContainingType != null)
-        {
-            return new()
-            {
-                Diagnostic = new(Diagnostics.NestedClassError(SystemClassAttributeName), classDef.GetLocation())
-            };
-        }
-        
-        //ECS class must be partial
-        if (classDef.Modifiers.All(m => m.ToString() != "partial"))
-        {
-            return new()
-            {
-                Diagnostic = new(Diagnostics.SystemClassPartialError(SystemClassAttributeName), classDef.GetLocation())
-            };
-        }
-        
-        //ECS class must not be generic
-        if (symbol is INamedTypeSymbol { IsGenericType: true })
-        {
-            return new()
-            {
-                Diagnostic = new(Diagnostics.SystemClassGenericError(SystemClassAttributeName), classDef.GetLocation())
-            };
-        }
-        
-        //ECS class must inherit from base system class.
-        if (symbol.BaseType == null || symbol.BaseType.ToString() != BaseClassName)
-        {
-            return new()
-            {
-                Diagnostic = new(Diagnostics.SystemClassInheritError(SystemClassAttributeName, BaseClassName), 
-                    classDef.GetLocation())
-            };
-        }
-
-        var namespaces = symbol.GetContainingNamespaces().Select(n => n.Name);
-        var methods = symbol.GetMembers().OfType<IMethodSymbol>().Select(GetMethodRecord).OfType<SystemMethodRecord>();
-        return new(new(namespaces), symbol.Name, new(methods), null);
-    }
+    #region EXECUTION
     
-    public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
-        var classProvider = context.SyntaxProvider.ForAttributeWithMetadataName(
-            fullyQualifiedMetadataName: SystemClassAttributeName,
-            predicate: static (s, _) => s is ClassDeclarationSyntax,
-            static (ctx, _) => GetClassRecord(ctx))
-            .Where(x => x != null);
-        
-        context.RegisterSourceOutput(classProvider, static (spc, source) => Execute(source!.Value, spc));
-    }
-
     private static string GetLambdaFor(SystemMethodRecord method)
     {
         //(lambdaArgs) => method(methodArgs)
@@ -198,4 +198,6 @@ internal class RegisterSystemMethodsSourceGenerator : IIncrementalGenerator
         string joinedNamespaces = source.Namespaces.DefaultIfEmpty().Aggregate((a, b) => a + '_' + b);
         spc.AddSource($"{joinedNamespaces}-{source.ClassName}.g.cs", builder.End());
     }
+    
+    #endregion
 }
