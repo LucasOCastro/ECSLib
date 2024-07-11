@@ -19,9 +19,14 @@ public class ClassStringBuilder
     {
         foreach (var name in namespaces)
         {
-            Open("namespace ", name);
+            PushLine("namespace ");
+            _builder.Append(name);
+            Open();
         }
-        Open($"{access} partial class ", className);
+        PushLine(access);
+        _builder.Append(" partial class ");
+        _builder.Append(className);
+        Open();
     }
 
     /// <summary> Finishes the class, closing every open block and returning the string. </summary>
@@ -79,8 +84,6 @@ public class ClassStringBuilder
         InitLine();
         PushMethodInvocationInline(methodName, args);
     }
-    
-    
     
     /// <summary> Appends the invocation of a generic method. </summary>
     public void PushGenericMethodInvocationInline(string methodName, IEnumerable<string> genericArguments, params string[] args)
@@ -143,32 +146,39 @@ public class ClassStringBuilder
     /// <summary>
     /// Opens a '{' block.
     /// </summary>
-    public void Open(string opener = "{")
+    public void Open()
     {
         InitLine();
-        _builder.Append(opener);
+        _builder.Append('{');
         IncreaseLevel();
     }
 
     /// <summary>
-    /// Opens a '{' block with custom text:<br/>
-    /// 'prefix' 'name'<br/>{
+    /// Appends a full method signature and opens a new block.<br/>
+    /// '<see cref="signature"/>' '<see cref="methodName"/>' ('<see cref="args"/>')<br/>{
     /// </summary>
-    public void Open(string prefix, string name)
+    /// <example>
+    /// signature = "public partial void"; methodName = "Foo", args = ["string Bar"]<br/>
+    /// <b>Result:</b><br/>
+    /// public partial void Foo(string Bar)<br/>{
+    /// </example>
+    public void OpenMethod(string signature, string methodName, params string[] args)
     {
         InitLine();
-        _builder.Append(prefix);
-        _builder.Append(name);
+        _builder.Append(signature);
+        _builder.Append(' ');
+        _builder.Append(methodName);
+        PushArgumentList(args);
         Open();
     }
 
     /// <summary>
-    /// Closes a '{' block with '}'.
+    /// Closes a block with '}'.
     /// </summary>
-    public void Close(string closer = "}")
+    public void Close()
     {
         DecreaseLevel();
         InitLine();
-        _builder.Append(closer);
+        _builder.Append('}');
     }
 }
