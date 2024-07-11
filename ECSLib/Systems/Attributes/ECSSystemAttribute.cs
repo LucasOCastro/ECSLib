@@ -9,22 +9,15 @@ public class InvalidComponentRefTypeException(Type type) : Exception($"{type.Nam
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public sealed class ECSSystemAttribute : Attribute
 {
-    private readonly Type[]? _all;
-    private readonly Type[]? _any;
-    private readonly Type[]? _none;
-     
-    // See the attribute guidelines at 
-    //  http://go.microsoft.com/fwlink/?LinkId=85236
-    public ECSSystemAttribute(Type[]? with = null, Type[]? any = null, Type[]? none = null)
-    {
-        
-    }
+    public Type[]? All;
+    public Type[]? Any;
+    public Type[]? None;
 
     public Query GenQuery(IEnumerable<ParameterInfo> parameters)
     {
-        var all = _all?.ToList() ?? [];
-        var any = _any?.ToList() ?? [];
-        var none = _none?.ToList() ?? [];
+        var all = All?.ToList() ?? [];
+        var any = Any?.ToList() ?? [];
+        var none = None?.ToList() ?? [];
         foreach (var parameter in parameters)
         {
             var byRefType = parameter.ParameterType;
