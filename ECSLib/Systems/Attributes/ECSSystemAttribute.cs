@@ -20,18 +20,25 @@ public sealed class ECSSystemAttribute : Attribute
         var none = None?.ToList() ?? [];
         foreach (var parameter in parameters)
         {
-            var byRefType = parameter.ParameterType;
-            if (byRefType == typeof(Entity) || byRefType == typeof(ECS)) continue;
-            if (!byRefType.IsByRef) throw new InvalidComponentRefTypeException(byRefType);
-            
-            var compRefType = byRefType.GetElementType()!;
-            if (!compRefType.IsConstructedGenericType || compRefType.GetGenericTypeDefinition() != typeof(Comp<>)) 
-                throw new InvalidComponentRefTypeException(compRefType);
+            var type = parameter.ParameterType;
+            if (type == typeof(Entity) || type == typeof(ECS)) continue;
+            if (!type.IsByRef) throw new InvalidComponentRefTypeException(type);
 
-            var type = compRefType.GetGenericArguments()[0];
+            //Extract Comp<T> from ref Comp<T>
+            //Extract T from ref T
+            type = type.GetElementType()!;
+            
+            //Extract T from Comp<T>
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Comp<>))
+            {
+                type = type.GetGenericArguments()[0];
+            }
+            
+            //TODO Study how to accept (a || b) && (c || d) pattern
             if (parameter.GetCustomAttribute<AnyAttribute>() != null)
                 any.Add(type);
-            else all.Add(type);
+            else 
+                all.Add(type);
         }
 
         return Query
