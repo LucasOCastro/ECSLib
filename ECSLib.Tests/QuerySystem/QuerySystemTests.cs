@@ -1,23 +1,11 @@
-﻿using ECSLib.Components;
-using ECSLib.Entities;
-using ECSLib.Systems;
+﻿using ECSLib.Entities;
 using ECSLib.Systems.Exceptions;
 
-namespace ECSLib.Tests;
+namespace ECSLib.Tests.QuerySystem;
 
 [Order(2)]
 public class QuerySystemTests
 {
-    private struct TestComponentA
-    {
-        public int ValueInt;
-    }
-
-    private struct TestComponentB
-    {
-        public double ValueDbl;
-    }
-    
     private ECS _world;
     
     [SetUp]
@@ -80,35 +68,7 @@ public class QuerySystemTests
             resultList.Clear();
         });
     }
-
-    private class TestSystemA : BaseSystem
-    {
-        public override void Process(float dt, ECS world)
-        {
-            world.Query(Query.With<TestComponentA>(), (Entity _, ref Comp<TestComponentA> a) => a.Value.ValueInt += 1);
-        }
-    }
-
-    private class TestSystemB : BaseSystem
-    {
-        public override void Process(float dt, ECS world)
-        {
-            world.Query(Query.With<TestComponentB>(), (Entity _, ref Comp<TestComponentB> b) => b.Value.ValueDbl *= 1.5);
-        }
-    }
     
-    private class TestSystemAB : BaseSystem
-    {
-        public override void Process(float dt, ECS world)
-        {
-            world.Query(Query.With<TestComponentA, TestComponentB>(),
-                (Entity _, ref Comp<TestComponentA> a, ref Comp<TestComponentB> b) =>
-                {
-                    a.Value.ValueInt = 0;
-                    b.Value.ValueDbl = 0;
-                });
-        }
-    }
     
     [Test, Order(4)]
      public void TestSystems()
