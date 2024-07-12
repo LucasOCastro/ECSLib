@@ -125,7 +125,9 @@ public class ClassStringBuilder
             _builder.Append(type);
             lastType = type;
         }
-        _builder.Append('>');
+
+        if (lastType == null) _builder.Remove(_builder.Length - 1, 1);
+        else _builder.Append('>');
     }
     
     /// <summary> Increases the indentation level, updating the indentation string properly. </summary>
