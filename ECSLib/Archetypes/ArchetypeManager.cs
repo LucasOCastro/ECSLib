@@ -139,7 +139,7 @@ internal partial class ArchetypeManager
     /// </summary>
     public void Unregister(Entity entity)
     {
-        var oldRecord = _entitiesRecords[entity]; 
+        var oldRecord = _entitiesRecords[entity];
         _archetypeIndexToEntities[oldRecord.ArchetypeIndex].Remove(entity);
         _entitiesRecords.Remove(entity);
         FreePositionInArchetype(oldRecord);
