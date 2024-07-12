@@ -4,4 +4,5 @@
 public class ECSSystemClassAttribute : Attribute
 {
     public int Pipeline;
+    public bool DoNotRegister;
 }
