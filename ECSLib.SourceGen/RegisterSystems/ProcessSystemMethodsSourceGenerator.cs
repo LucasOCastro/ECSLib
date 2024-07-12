@@ -44,16 +44,19 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
         {
             return new()
             {
-                Diagnostic = new(Diagnostics.NestedClassError(SystemClassAttributeName), classDef.GetLocation())
+                Diagnostic = new(Diagnostics.NestedClass, classDef.GetLocation())
             };
         }
         
         //ECS class must be partial
         if (classDef.Modifiers.All(m => m.ToString() != "partial"))
         {
+            var location = classDef.Modifiers.Count > 0
+                ? classDef.Modifiers.Last().GetLocation()
+                : classDef.Identifier.GetLocation();
             return new()
             {
-                Diagnostic = new(Diagnostics.SystemClassPartialError(SystemClassAttributeName), classDef.GetLocation())
+                Diagnostic = new(Diagnostics.SystemClassPartial, location)
             };
         }
         
@@ -62,7 +65,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
         {
             return new()
             {
-                Diagnostic = new(Diagnostics.SystemClassGenericError(SystemClassAttributeName), classDef.GetLocation())
+                Diagnostic = new(Diagnostics.SystemClassGeneric, classDef.GetLocation())
             };
         }
         
@@ -71,8 +74,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
         {
             return new()
             {
-                Diagnostic = new(Diagnostics.SystemClassInheritError(SystemClassAttributeName, BaseClassName), 
-                    classDef.GetLocation())
+                Diagnostic = new(Diagnostics.SystemClassInherit, classDef.GetLocation())
             };
         }
 
@@ -103,7 +105,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
                 {
                     return new()
                     {
-                        Diagnostic = new(Diagnostics.EntityParamOrderError(), param.Locations.FirstOrDefault())
+                        Diagnostic = new(Diagnostics.EntityParamOrder, param.Locations.FirstOrDefault())
                     };
                 }
                 hasEntityParam = true;
@@ -123,7 +125,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             {
                 return new()
                 {
-                    Diagnostic = new(Diagnostics.ParamRefStructError(), param.Locations.FirstOrDefault())
+                    Diagnostic = new(Diagnostics.ParamRefStruct, param.Locations.FirstOrDefault())
                 };
             }
 
@@ -142,7 +144,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             {
                 return new()
                 {
-                    Diagnostic = new(Diagnostics.OptionalParamWrapError(), param.Locations.FirstOrDefault())
+                    Diagnostic = new(Diagnostics.OptionalParamWrap, param.Locations.FirstOrDefault())
                 };
             }
             
@@ -158,7 +160,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             {
                 return new()
                 {
-                    Diagnostic = new(Diagnostics.RequiredParamError(), symbol.Locations.FirstOrDefault())
+                    Diagnostic = new(Diagnostics.RequiredParam, symbol.Locations.FirstOrDefault())
                 };
             }
         }

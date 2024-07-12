@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace ECSLib.SourceGen.QueryActions;
 
 [Generator]
-public class QueryActionSourceGen : IIncrementalGenerator
+internal class QueryActionSourceGen : IIncrementalGenerator
 {
     private const string ECSClassName = "ECSLib.ECS";
     private const string ArchetypeManagerClassName = "ECSLib.Archetypes.ArchetypeManager";
