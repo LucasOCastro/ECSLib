@@ -39,4 +39,16 @@ public static class Diagnostics
         "Invalid system parameters",
         "The component parameter in an ECS must be a struct passed by reference.",
         "Problem", DiagnosticSeverity.Error, true);
+
+    public static DiagnosticDescriptor RequiredParamError() => new(
+        "ECSG004",
+        "Empty system query",
+        "A system method requires at least one required param for a query.",
+        "Problem", DiagnosticSeverity.Error, true);
+
+    public static DiagnosticDescriptor OptionalParamWrapError() => new(
+        "ECSG005",
+        "Unwrapped optional parameter",
+        "An optional system parameter must be wrapped in Comp<T>.",
+        "Problem", DiagnosticSeverity.Error, true);
 }

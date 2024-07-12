@@ -18,6 +18,8 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
     private const string EntityStructName = "ECSLib.Entities.Entity";
     private const string ECSClassName = "ECSLib.ECS";
     private const string QueryStructName = "ECSLib.Query";
+    private const string AnyAttributeMetadataName = "ECSLib.Systems.Attributes.AnyAttribute";
+    private const string OptionalAttributeMetadataName = "ECSLib.Systems.Attributes.OptionalAttribute";
     
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -87,6 +89,7 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
         if (attribute == null) return null;
 
         bool hasEntityParam = false;
+        bool hasRequiredParam = false;
         List<ParamRecord> paramRecords = [];
         for (int i = 0; i < symbol.Parameters.Length; i++)
         {
@@ -123,10 +126,43 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
                     Diagnostic = new(Diagnostics.ParamRefStructError(), param.Locations.FirstOrDefault())
                 };
             }
+
+            bool IsOptionalAttribute(AttributeData attributeData)
+            {
+                var name = attributeData.AttributeClass.GetFullMetadataName();
+                return name is AnyAttributeMetadataName or OptionalAttributeMetadataName;
+            }
+
+            if (!param.GetAttributes().Any(IsOptionalAttribute))
+            {
+                hasRequiredParam = true;
+            }
+            //If is optional, must be wrapped
+            else if (!isWrapped)
+            {
+                return new()
+                {
+                    Diagnostic = new(Diagnostics.OptionalParamWrapError(), param.Locations.FirstOrDefault())
+                };
+            }
             
             //Register the parameter
             paramRecords.Add(new(type.ToString(), isWrapped));
         }
+        
+        //Must have at least one required parameter
+        if (!hasRequiredParam)
+        {
+            var requiredArray = attribute.NamedArguments.FirstOrDefault(p => p.Key == "All").Value;
+            if (requiredArray.Kind != TypedConstantKind.Array || requiredArray.Values.Length == 0)
+            {
+                return new()
+                {
+                    Diagnostic = new(Diagnostics.RequiredParamError(), symbol.Locations.FirstOrDefault())
+                };
+            }
+        }
+        
         return new(symbol.MetadataName, new(paramRecords), hasEntityParam, null);
     }
 
