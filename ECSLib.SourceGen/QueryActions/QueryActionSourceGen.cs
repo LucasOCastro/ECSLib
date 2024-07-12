@@ -22,7 +22,9 @@ public class QueryActionSourceGen : IIncrementalGenerator
         var classProvider = context.SyntaxProvider.CreateSyntaxProvider(
                 predicate: static (s, _) => s is InvocationExpressionSyntax {Expression: MemberAccessExpressionSyntax exp} && exp.Name.ToString().StartsWith("Query"),
                 transform: static (ctx, x) => GetClassRecord(ctx, x))
-            .Where(x => x != null);
+            .Where(x => x != null)
+            .Collect()
+            .SelectMany((models, _) => models.Distinct());
         
         context.RegisterSourceOutput(classProvider, static (spc, source) => Execute(source!.Value, spc));
     }
