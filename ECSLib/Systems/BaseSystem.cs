@@ -1,6 +1,18 @@
-﻿namespace ECSLib.Systems;
+﻿using System.Reflection;
+using ECSLib.Systems.Attributes;
+
+namespace ECSLib.Systems;
 
 public abstract class BaseSystem
 {
-    public abstract void Process(float dt, ECS world);
+    protected static Query GenQueryForMethod(Type type, string methodName)
+    {
+        var method = type.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        if (method == null) throw new MissingMethodException(type.Name, methodName);
+        var attribute = method.GetCustomAttribute<ECSSystemAttribute>();
+        if (attribute == null) throw new CustomAttributeFormatException();
+        return attribute.GenQuery(method.GetParameters());
+    }
+    
+    public abstract void Process(ECS world);
 }

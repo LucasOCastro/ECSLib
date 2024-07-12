@@ -5,7 +5,7 @@ using ECSLib.Systems;
 
 namespace ECSLib;
 
-public class ECS
+public sealed partial class ECS
 {
     private readonly EntityManager _entityManager = new();
     private readonly ArchetypeManager _archetypeManager = new();
@@ -35,11 +35,6 @@ public class ECS
     /// <summary> Unregisters an entity and all of its components. </summary>
     public void DestroyEntity(Entity entity)
     {
-        foreach (var componentType in _archetypeManager.GetAllComponentTypes(entity))
-        {
-            //TODO moves slowly from archetype to archetype must make a complete jump faster
-            _archetypeManager.RemoveComponent(entity, componentType);
-        }
         _archetypeManager.Unregister(entity);
         _entityManager.RemoveEntity(entity);
     }
@@ -78,7 +73,7 @@ public class ECS
     
     
     /// <inheritdoc cref="SystemManager.Process"/>
-    public void ProcessSystems(float dt) => _systemManager.Process(dt, this);
+    public void ProcessSystems(float dt) => _systemManager.Process(this);
     
     #endregion
     

@@ -5,8 +5,18 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <WarningLevel>1</WarningLevel>
+      <NoWarn>1701;1702;8600;8602;8601</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <WarningLevel>1</WarningLevel>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,6 +29,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ECSLib\ECSLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ECSLib.SourceGen\ECSLib.SourceGen.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
 </Project>
