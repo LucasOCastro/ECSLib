@@ -5,7 +5,7 @@ using ECSLib.Extensions;
 
 namespace ECSLib.Archetypes;
 
-internal class ArchetypeManager
+internal partial class ArchetypeManager
 {
     #region COLLECTIONS
     
