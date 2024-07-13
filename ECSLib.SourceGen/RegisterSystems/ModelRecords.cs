@@ -4,7 +4,8 @@ namespace ECSLib.SourceGen.RegisterSystems;
 
 internal readonly record struct ParamRecord(
     string Type, 
-    bool IsWrappedByComp);
+    bool IsWrappedByComp,
+    bool IsReadOnly);
 
 internal readonly record struct SystemMethodRecord(
     string MethodName, 
