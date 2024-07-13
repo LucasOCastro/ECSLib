@@ -98,7 +98,7 @@ public class QuerySystemTests
         _world.RegisterSystem<TestSystemAB>();
         
         //Run the systems and assert the new values
-        _world.ProcessSystems(0);
+        _world.ProcessSystems();
         Assert.Multiple(() =>
         {
             Assert.That(_world.GetComponent<TestComponentA>(entityA).ValueInt, Is.EqualTo(2));

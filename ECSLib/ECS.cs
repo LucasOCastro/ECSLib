@@ -24,6 +24,7 @@ public sealed partial class ECS
     /// will search for an enum type which has <see cref="Systems.Attributes.ECSSystemClassAttribute"/>
     /// and register it as the pipeline enum.
     /// </param>
+    /// <seealso cref="RegisterSystemsFrom"/>
     public ECS(bool registerSystemsViaReflection = false, Type? pipelineEnumType = null, bool registerPipelineEnumTypeViaReflection = false)
     {
         if (pipelineEnumType != null)
@@ -86,6 +87,7 @@ public sealed partial class ECS
     /// <typeparam name="T">The type of the system to be instantiated and registered. Only one system of each type is allowed per world.</typeparam>
     public void RegisterSystem<T>() where T : BaseSystem, new() => _systemManager.RegisterSystem<T>();
     
+    /// <inheritdoc cref="SystemManager.RegisterAllSystems"/>
     public void RegisterSystemsFrom(Assembly assembly) => _systemManager.RegisterAllSystems(assembly);
     
     

@@ -36,9 +36,13 @@ internal class SystemManager
             throw new MissingPipelineEnumTypeException();
         }
     }
-
     
-    /// <summary> Searches the assembly for systems to register. </summary>
+    /// <summary>
+    /// Searches the assembly for systems to register.
+    /// All concrete classes which inherit from <see cref="BaseSystem"/>
+    /// and have <see cref="Systems.Attributes.ECSSystemClassAttribute"/> will
+    /// automatically be registered to execute on <see cref="Process(ECS)"/>.
+    /// </summary>
     public void RegisterAllSystems(Assembly assembly) 
     {
         foreach (var systemType in assembly.AllConcreteTypesWhichInherit(typeof(BaseSystem)))
@@ -91,7 +95,9 @@ internal class SystemManager
     }
 
     /// <summary> Registers a new system to be processed in <see cref="Process(ECS)"/>.</summary>
-    /// <typeparam name="T">The type of the system to be instantiated and registered. Only one system of each type is allowed per world.</typeparam>
+    /// <typeparam name="T">
+    /// The type of the system to be instantiated and registered. Only one system of each type is allowed per world.
+    /// </typeparam>
     public void RegisterSystem<T>() where T : BaseSystem, new() => RegisterSystem(new T());
 
     /// <summary>
