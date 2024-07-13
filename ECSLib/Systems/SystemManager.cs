@@ -43,7 +43,7 @@ internal class SystemManager
     {
         foreach (var systemType in assembly.AllConcreteTypesWhichInherit(typeof(BaseSystem)))
         {
-            var attribute = assembly.GetCustomAttribute<ECSSystemClassAttribute>();
+            var attribute = systemType.GetCustomAttribute<ECSSystemClassAttribute>();
             if (attribute == null || attribute.DoNotRegister) continue;
             try
             {
