@@ -27,7 +27,7 @@ public class ReflectionTests
         _world.AddComponent<TestComponent>(entity, new(){Value = 1});
         
         //Process the systems and assert the result
-        _world.ProcessSystems(0);
+        _world.ProcessSystems();
         Assert.That(_world.GetComponent<TestComponent>(entity).Value, Is.EqualTo(2));
     }
 }

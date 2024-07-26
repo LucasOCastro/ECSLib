@@ -15,4 +15,15 @@ public abstract class BaseSystem
     }
     
     public abstract void Process(ECS world);
+
+    private int? _pipelineIndex;
+
+    public int Pipeline
+    {
+        get
+        {
+            _pipelineIndex ??= GetType().GetCustomAttribute<ECSSystemClassAttribute>()?.Pipeline ?? 0;
+            return _pipelineIndex.Value;
+        }
+    }
 }

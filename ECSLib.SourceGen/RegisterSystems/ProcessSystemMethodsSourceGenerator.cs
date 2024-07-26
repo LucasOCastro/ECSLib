@@ -121,18 +121,12 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             }
 
             //Param must be a ref to a struct
-            if (param.RefKind != RefKind.Ref || type.TypeKind != TypeKind.Struct)
+            if ((param.RefKind != RefKind.Ref && param.RefKind != RefKind.In) || type.TypeKind != TypeKind.Struct)
             {
                 return new()
                 {
                     Diagnostic = new(Diagnostics.ParamRefStruct, param.Locations.FirstOrDefault())
                 };
-            }
-
-            bool IsOptionalAttribute(AttributeData attributeData)
-            {
-                var name = attributeData.AttributeClass.GetFullMetadataName();
-                return name is AnyAttributeMetadataName or OptionalAttributeMetadataName;
             }
 
             if (!param.GetAttributes().Any(IsOptionalAttribute))
@@ -149,7 +143,14 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             }
             
             //Register the parameter
-            paramRecords.Add(new(type.ToString(), isWrapped));
+            paramRecords.Add(new(type.ToString(), isWrapped, param.RefKind == RefKind.In));
+            continue;
+
+            static bool IsOptionalAttribute(AttributeData attributeData)
+            {
+                var name = attributeData.AttributeClass.GetFullMetadataName();
+                return name is AnyAttributeMetadataName or OptionalAttributeMetadataName;
+            }
         }
         
         //Must have at least one required parameter
@@ -187,7 +188,8 @@ internal class ProcessSystemMethodsSourceGenerator : IIncrementalGenerator
             lambdaArgs.Append(i);
 
             if (methodArgs.Length > 1) methodArgs.Append(", ");
-            methodArgs.Append("ref comp");
+            methodArgs.Append(param.IsReadOnly ? "in" : "ref");
+            methodArgs.Append(" comp");
             methodArgs.Append(i);
             if (!param.IsWrappedByComp) methodArgs.Append(".Value");
         }
