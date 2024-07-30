@@ -10,25 +10,25 @@ namespace ECSLib.XML;
 /// </summary>
 public class EntityFactoryRegistry
 {
-    private readonly XmlRegistry _documents;
+    private readonly FactoryXmlRegistry _xmlRegistry;
     private readonly ModelCache _models;
     private readonly Dictionary<string, EntityFactoryDelegate> _factories = new();
 
     public EntityFactoryRegistry()
     {
-        _documents = new();
-        _models = new(_documents);
+        _xmlRegistry = new();
+        _models = new(_xmlRegistry);
     }
     
     /// <summary>
     /// Registers a single XML document for entity generation.
     /// </summary>
-    public void LoadXml(XmlDocument document) => _documents.Register(document);
+    public void LoadXml(XmlDocument document) => _xmlRegistry.RegisterDocument(document);
     
     /// <summary>
     /// Registers multiple XML documents for entity generation.
     /// </summary>
-    public void LoadXml(IEnumerable<XmlDocument> documents) => _documents.Register(documents);
+    public void LoadXml(IEnumerable<XmlDocument> documents) => _xmlRegistry.RegisterDocuments(documents);
 
     /// <summary>
     /// After the factories are generated, call this to clean up
@@ -36,7 +36,7 @@ public class EntityFactoryRegistry
     /// </summary>
     public void ClearFactoryGenerationData()
     {
-        _documents.Clear();
+        _xmlRegistry.Clear();
         _models.Clear();
     }
 

@@ -9,9 +9,9 @@ internal class ModelCache : IEnumerable<EntityModel>
 {
     private readonly Dictionary<string, EntityModel> _models = new();
 
-    private readonly XmlRegistry _xmlStorage;
+    private readonly FactoryXmlRegistry _xmlStorage;
     
-    public ModelCache(XmlRegistry xmlStorage)
+    public ModelCache(FactoryXmlRegistry xmlStorage)
     {
         _xmlStorage = xmlStorage;
     }
@@ -23,8 +23,8 @@ internal class ModelCache : IEnumerable<EntityModel>
     {
         if (_models.TryGetValue(name, out var model)) return model;
         
-        var doc = _xmlStorage.Get(name);
-        model = new(doc.DocumentElement, this, traveledModels);
+        var def = _xmlStorage.Get(name);
+        model = new(def, this, traveledModels);
         _models.Add(name, model);
         return model;
     }
@@ -34,7 +34,7 @@ internal class ModelCache : IEnumerable<EntityModel>
     /// </summary>
     public void LoadAll()
     {
-        foreach (var name in _xmlStorage.AllDocNames)
+        foreach (var name in _xmlStorage.AllNames)
         {
             Request(name, new(name));
         }

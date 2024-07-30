@@ -4,34 +4,64 @@ using ECSLib.XML.Exceptions;
 namespace ECSLib.XML;
 
 /// <summary>
-/// Stores <see cref="XmlDocument"/>s uniquely identified by the root node name.
+/// Stores xml nodes for entity factory definitions.
 /// </summary>
-internal class XmlRegistry
+internal class FactoryXmlRegistry
 {
-    private readonly Dictionary<string, XmlDocument> _documents = new();
+    private const string EntityCollectionNodeName = "Defs";
+    
+    private readonly Dictionary<string, XmlNode> _definitions = new();
 
-    public XmlDocument Get(string name) => _documents[name];
+    public XmlNode Get(string name) => _definitions[name];
 
-    public void Register(XmlDocument document)
+    /// <summary>
+    /// Registers a factory definition node uniquely identified by its name.
+    /// </summary>
+    /// <exception cref="DuplicatedEntityDocumentNameException">Thrown if two definitions have the same name.</exception>
+    private void Register(XmlNode factoryDefinitionNode)
     {
-        var name = document.DocumentElement.Name;
-        if (!_documents.TryAdd(name, document))
+        var name = factoryDefinitionNode.Name;
+        if (!_definitions.TryAdd(name, factoryDefinitionNode))
         {
             throw new DuplicatedEntityDocumentNameException(name);
         }
     }
 
-    public void Register(IEnumerable<XmlDocument> documents)
+    /// <summary>
+    /// Registers all factory definitions contained in the document provided.
+    /// Invalid documents are ignored.
+    /// </summary>
+    /// <exception cref="DuplicatedEntityDocumentNameException">Thrown if two definitions have the same name.</exception>
+    public void RegisterDocument(XmlDocument document)
+    {
+        var root = document.DocumentElement;
+        if (root == null) return;
+
+        if (root.Name == EntityCollectionNodeName)
+        {
+            foreach (XmlNode child in root.ChildNodes)
+            {
+                if (child.NodeType != XmlNodeType.Element) continue;
+                Register(child);
+            }
+        }
+        else Register(root);
+    }
+
+    /// <summary>
+    /// Registers all factory definitions in each of the documents provided.
+    /// </summary>
+    /// <exception cref="DuplicatedEntityDocumentNameException">Thrown if two definitions have the same name.</exception>
+    public void RegisterDocuments(IEnumerable<XmlDocument> documents)
     {
         foreach (var doc in documents)
         {
-            Register(doc);
+            RegisterDocument(doc);
         }
     }
 
-    public IEnumerable<string> AllDocNames => _documents.Keys;
-    public IEnumerable<XmlDocument> AllDocs => _documents.Values;
-    public IEnumerable<KeyValuePair<string, XmlDocument>> AllPairs => _documents;
+    public IEnumerable<string> AllNames => _definitions.Keys;
+    public IEnumerable<XmlNode> AllDefinitions => _definitions.Values;
 
-    public void Clear() => _documents.Clear();
+    public void Clear() => _definitions.Clear();
 }
