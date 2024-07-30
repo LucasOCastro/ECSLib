@@ -53,6 +53,9 @@ internal static class CodeGeneratorExtension
             case byte by:
                 il.Emit(OpCodes.Ldc_I4_S, by);
                 break;
+            case string str:
+                il.Emit(OpCodes.Ldstr, str);
+                break;
             default:
                 throw new ArgumentException("Unsupported type " + value.GetType().FullName + " for loading as constant in IL code.");
         }
