@@ -9,13 +9,21 @@ namespace ECSLib.XML;
 
 internal static class FactoryGenerator
 {
-    
     private static readonly MethodInfo CreateEntityMethodInfo =
         typeof(ECS).GetMethod(nameof(ECS.CreateEntity), BindingFlags.Instance | BindingFlags.Public)!;
 
     private static readonly MethodInfo AddComponentGenericMethodInfo =
         typeof(ECS).GetMethods(BindingFlags.Instance | BindingFlags.Public)
             .First(m => m.Name == nameof(ECS.AddComponent) && m.GetParameters().Length == 2);
+
+    private static object? ConvertString(string value, Type type)
+    {
+        //Can simply set to true by including <booleanField/>
+        if (type == typeof(bool) && string.IsNullOrEmpty(value))
+            return true;
+        
+        return Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+    }
     
     public static EntityFactoryDelegate CreateEntityFactory(EntityModel model, Assembly assembly)
     {
@@ -45,7 +53,7 @@ internal static class FactoryGenerator
                 if (member == null) throw new MissingMemberException(componentType.Name, fieldName);
                 
                 Type valueType = member.GetFieldOrPropertyType();
-                var value = Convert.ChangeType(fieldValue, valueType, CultureInfo.InvariantCulture);
+                var value = ConvertString(fieldValue, valueType);
                 
                 //Set the field/property
                 generator.Emit(OpCodes.Ldloca_S, componentLocal);
