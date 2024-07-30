@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using ECSLib.Components.Interning;
 using ECSLib.Entities;
 using ECSLib.XML.Exceptions;
 using ECSLib.XML.Extensions;
@@ -52,12 +53,26 @@ internal static class FactoryGenerator
                 var member = componentType.GetFieldOrProperty(fieldName, BindingFlags.Instance | BindingFlags.Public);
                 if (member == null) throw new MissingMemberException(componentType.Name, fieldName);
                 
-                Type valueType = member.GetFieldOrPropertyType();
-                var value = ConvertString(fieldValue, valueType);
-                
-                //Set the field/property
+                //Load the component's address onto the stack
                 generator.Emit(OpCodes.Ldloca_S, componentLocal);
+                
+                Type valueType = member.GetFieldOrPropertyType();
+                //If the field is an interned ref, load the interning struct address onto the stack
+                if (valueType.IsConstructedGenericType && valueType.GetGenericTypeDefinition() == typeof(PooledRef<>))
+                {
+                    var valueProp = valueType.GetProperty(nameof(PooledRef<object>.Value), BindingFlags.Instance | BindingFlags.Public)!;
+                    if (member is FieldInfo f) generator.Emit(OpCodes.Ldflda, f);
+                    else throw new InternedRefIsPropertyException(member);
+                    
+                    valueType = valueType.GenericTypeArguments[0];
+                    member = valueProp;
+                }
+                
+                //Load the actual value into the stack
+                var value = ConvertString(fieldValue, valueType);
                 generator.EmitLoadConstant(value);
+                
+                
                 switch (member)
                 {
                     case FieldInfo field:
