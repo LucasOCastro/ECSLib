@@ -27,16 +27,20 @@ internal class EntityModel
             SetField(type, field, value);
     }
     
-    public EntityModel(XmlNode entityNode, ModelCache cache)
+    public EntityModel(XmlNode entityNode, ModelCache cache, TravelLog traveledModels)
     {
         Name = entityNode.Name;
         
         if (entityNode.Attributes?[ParentAttributeName] is {} attribute)
         {
             var parents = attribute.Value.Split(ParentAttributeSeparator);
-            foreach (var parent in parents.Select(cache.Request))
+            foreach (var parentName in parents)
             {
-                CopyComponentsFrom(parent.Components);
+                //TODO current loop detection will throw if two parents inherit from the same model.
+                //Either copy how python's diamond inheritance system works, or remove multiple inheritance.
+                traveledModels.Step(parentName);
+                var parentModel = cache.Request(parentName, traveledModels);
+                CopyComponentsFrom(parentModel.Components);
             }
         }
         

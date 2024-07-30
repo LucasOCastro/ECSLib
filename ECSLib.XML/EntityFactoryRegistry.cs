@@ -68,7 +68,7 @@ public class EntityFactoryRegistry
         }
     }
     
-    /// <returns>The factory delegate assigned tot he provided name.</returns>
+    /// <returns>The factory delegate assigned to the provided name.</returns>
     public EntityFactoryDelegate GetFactory(string name) => _factories[name];
     
     /// <summary>

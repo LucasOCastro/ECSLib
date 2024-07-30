@@ -15,17 +15,16 @@ internal class ModelCache : IEnumerable<EntityModel>
     {
         _xmlStorage = xmlStorage;
     }
-
-    //TODO detect loops
+    
     /// <summary>
     /// Generate a model if it is not already registered, then return it.
     /// </summary>
-    public EntityModel Request(string name)
+    public EntityModel Request(string name, TravelLog traveledModels)
     {
         if (_models.TryGetValue(name, out var model)) return model;
-
+        
         var doc = _xmlStorage.Get(name);
-        model = new(doc.DocumentElement, this);
+        model = new(doc.DocumentElement, this, traveledModels);
         _models.Add(name, model);
         return model;
     }
@@ -37,7 +36,7 @@ internal class ModelCache : IEnumerable<EntityModel>
     {
         foreach (var name in _xmlStorage.AllDocNames)
         {
-            Request(name);
+            Request(name, new(name));
         }
     }
 
