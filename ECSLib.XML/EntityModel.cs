@@ -51,8 +51,7 @@ internal class EntityModel
             foreach (XmlNode fieldNode in componentNode.ChildNodes)
             {
                 if (fieldNode.NodeType != XmlNodeType.Element) continue;
-                if (fieldNode.Value == null) continue;
-                SetField(componentNode.Name, fieldNode.Name, fieldNode.Value);
+                SetField(componentNode.Name, fieldNode.Name, fieldNode.InnerText);
             }
         }
     }
