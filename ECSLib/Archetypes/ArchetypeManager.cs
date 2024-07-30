@@ -174,6 +174,12 @@ internal partial class ArchetypeManager
     }
     
     /// <inheritdoc cref="AddComponent"/>
+    public void AddComponent<TComponent>(Entity entity) where TComponent : struct
+    {
+        AddComponent(entity, typeof(TComponent));
+    }
+    
+    /// <inheritdoc cref="AddComponent"/>
     public void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : struct
     {
         AddComponent(entity, typeof(TComponent));

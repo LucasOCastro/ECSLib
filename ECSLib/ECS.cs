@@ -64,8 +64,14 @@ public sealed partial class ECS
         return ref _archetypeManager.GetComponent<TComponent>(entity);
     }
 
-    /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}"/>
-    public void AddComponent<TComponent>(Entity entity, TComponent component = default) where TComponent : struct
+    /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}(Entity)"/>
+    public void AddComponent<TComponent>(Entity entity) where TComponent : struct
+    {
+        _archetypeManager.AddComponent<TComponent>(entity);
+    }
+    
+    /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}(Entity, TComponent)"/>
+    public void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : struct
     {
         _archetypeManager.AddComponent(entity, component);
     }
