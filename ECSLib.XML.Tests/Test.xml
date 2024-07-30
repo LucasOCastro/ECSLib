@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Defs>
+    <Villager>
+        <ECSLib.XML.Tests.HealthComponent>
+            <Health>{TestHealth}</Health>
+            <DeathSound>{TestDeathSound}</DeathSound>
+        </ECSLib.XML.Tests.HealthComponent>
+        <ECSLib.XML.Tests.MoverComponent>
+            <Speed>{TestSpeed.ToString(CultureInfo.InvariantCulture)}</Speed>
+            {(TestCanRun ? "<CanRun/>" : "")}
+        </ECSLib.XML.Tests.MoverComponent>
+    </Villager>
+    
+    <Merchant>
+        <ECSLib.XML.Tests.HealthComponent>
+            <Health>{TestHealth}</Health>
+            <DeathSound>{TestDeathSound}</DeathSound>
+        </ECSLib.XML.Tests.HealthComponent>
+        <ECSLib.XML.Tests.MoverComponent>
+            <Speed>{TestSpeed.ToString(CultureInfo.InvariantCulture)}</Speed>
+            {(TestCanRun ? "<CanRun/>" : "")}
+        </ECSLib.XML.Tests.MoverComponent>
+    </Merchant>
+</Defs>
