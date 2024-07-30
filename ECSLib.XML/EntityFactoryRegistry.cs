@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Reflection;
+using System.Xml;
 using ECSLib.Entities;
 using ECSLib.XML.Exceptions;
 
@@ -50,7 +51,7 @@ public class EntityFactoryRegistry
         _models.LoadAll();
         foreach (var model in _models)
         {
-            Register(model.Name, FactoryGenerator.CreateEntityFactory(model));
+            Register(model.Name, FactoryGenerator.CreateEntityFactory(model, Assembly.GetCallingAssembly()));
         }
     }
     

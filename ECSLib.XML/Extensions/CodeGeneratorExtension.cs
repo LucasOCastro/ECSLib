@@ -10,8 +10,8 @@ internal static class CodeGeneratorExtension
         var constructor = structType.GetConstructor(Type.EmptyTypes);
         if (constructor != null)
         {
-            il.Emit(OpCodes.Ldloca_S, local.LocalIndex);
-            il.Emit(OpCodes.Calli, constructor);
+            il.Emit(OpCodes.Ldloca_S, local);
+            il.Emit(OpCodes.Call, constructor);
         }
         return local;
     }

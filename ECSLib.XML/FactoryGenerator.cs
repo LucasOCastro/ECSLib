@@ -13,22 +13,28 @@ internal static class FactoryGenerator
         typeof(ECS).GetMethod(nameof(ECS.CreateEntity), BindingFlags.Instance | BindingFlags.Public)!;
 
     private static readonly MethodInfo AddComponentGenericMethodInfo =
-        typeof(ECS).GetMethod(nameof(ECS.AddComponent), BindingFlags.Instance | BindingFlags.Public)!;
+        typeof(ECS).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .First(m => m.Name == nameof(ECS.AddComponent) && m.GetParameters().Length == 2);
     
-    public static EntityFactoryDelegate CreateEntityFactory(EntityModel model)
+    public static EntityFactoryDelegate CreateEntityFactory(EntityModel model, Assembly assembly)
     {
-        DynamicMethod dynamicMethod = new(model.Name, typeof(Entity), [typeof(ECS)]);
+        DynamicMethod dynamicMethod = new(
+            name: model.Name,
+            returnType: typeof(Entity),
+            parameterTypes: [typeof(ECS)],
+            m: typeof(FactoryGenerator).Module
+        );
         var generator = dynamicMethod.GetILGenerator();
 
         //Entity entity = world.CreateEntity();
         var entityLocal = generator.DeclareLocal(typeof(Entity));
         generator.Emit(OpCodes.Ldarg_0);
-        generator.Emit(OpCodes.Calli, CreateEntityMethodInfo);
-        generator.Emit(OpCodes.Stloc, entityLocal.LocalIndex);
+        generator.Emit(OpCodes.Call, CreateEntityMethodInfo);
+        generator.Emit(OpCodes.Stloc, entityLocal);
 
         foreach (var (componentTypeName, fields) in model.Components)
         {
-            var componentType = Type.GetType(componentTypeName) ?? throw new InvalidComponentTypeNameException(componentTypeName);
+            var componentType = assembly.GetType(componentTypeName) ?? throw new InvalidComponentTypeNameException(componentTypeName);
             
             //Constructs and stores the component instance
             var componentLocal = generator.EmitStructConstructor(componentType);
@@ -41,7 +47,7 @@ internal static class FactoryGenerator
                 var value = Convert.ChangeType(fieldValue, valueType);
                 
                 //Set the field/property
-                generator.Emit(OpCodes.Ldloc, componentLocal.LocalIndex);
+                generator.Emit(OpCodes.Ldloca_S, componentLocal);
                 generator.EmitLoadConstant(value);
                 switch (member)
                 {
@@ -49,7 +55,7 @@ internal static class FactoryGenerator
                         generator.Emit(OpCodes.Stfld, field);
                         break;
                     case PropertyInfo prop:
-                        generator.Emit(OpCodes.Calli, prop.SetMethod);
+                        generator.Emit(OpCodes.Call, prop.SetMethod);
                         break;
                 }
             }
@@ -58,11 +64,13 @@ internal static class FactoryGenerator
             //ecs.AddComponent(entity, component);
             var addComponentMethodInfo = AddComponentGenericMethodInfo.MakeGenericMethod(componentType);
             generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldloc, entityLocal.LocalIndex);
-            generator.Emit(OpCodes.Ldloc, componentLocal.LocalIndex);
-            generator.Emit(OpCodes.Calli, addComponentMethodInfo);
+            generator.Emit(OpCodes.Ldloc, entityLocal);
+            generator.Emit(OpCodes.Ldloc, componentLocal);
+            generator.Emit(OpCodes.Call, addComponentMethodInfo);
         }
 
+        generator.Emit(OpCodes.Ldloc, entityLocal);
+        generator.Emit(OpCodes.Ret);
         return dynamicMethod.CreateDelegate<EntityFactoryDelegate>();
     }
 }
