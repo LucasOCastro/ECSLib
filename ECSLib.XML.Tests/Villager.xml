@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Villager>
+    <ECSLib.XML.Tests.HealthComponent>
+        <Health>10</Health>
+        <DeathSound>15</DeathSound>
+    </ECSLib.XML.Tests.HealthComponent>
+    <ECSLib.XML.Tests.MoverComponent>
+        <Speed>4.5</Speed>
+        <CanRun/>
+    </ECSLib.XML.Tests.MoverComponent>
+</Villager>

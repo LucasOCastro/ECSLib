@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECSLib.Tests", "ECSLib.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECSLib.XML", "ECSLib.XML\ECSLib.XML.csproj", "{B2AC5B1F-CEC3-4BAB-9308-C83CC94FD607}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECSLib.XML.Tests", "ECSLib.XML.Tests\ECSLib.XML.Tests.csproj", "{D5B9F539-4C04-4B40-A9D0-85FF9BC8A1F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{B2AC5B1F-CEC3-4BAB-9308-C83CC94FD607}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2AC5B1F-CEC3-4BAB-9308-C83CC94FD607}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2AC5B1F-CEC3-4BAB-9308-C83CC94FD607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5B9F539-4C04-4B40-A9D0-85FF9BC8A1F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5B9F539-4C04-4B40-A9D0-85FF9BC8A1F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5B9F539-4C04-4B40-A9D0-85FF9BC8A1F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5B9F539-4C04-4B40-A9D0-85FF9BC8A1F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
