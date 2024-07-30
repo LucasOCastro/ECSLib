@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Reflection.Emit;
 using ECSLib.Entities;
 using ECSLib.XML.Exceptions;
@@ -44,7 +45,7 @@ internal static class FactoryGenerator
                 if (member == null) throw new MissingMemberException(componentType.Name, fieldName);
                 
                 Type valueType = member.GetFieldOrPropertyType();
-                var value = Convert.ChangeType(fieldValue, valueType);
+                var value = Convert.ChangeType(fieldValue, valueType, CultureInfo.InvariantCulture);
                 
                 //Set the field/property
                 generator.Emit(OpCodes.Ldloca_S, componentLocal);
