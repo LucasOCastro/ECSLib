@@ -4,40 +4,79 @@ using ECSLib.XML.Exceptions;
 
 namespace ECSLib.XML;
 
-public static class EntityFactoryRegistry
+/// <summary>
+/// Stores and manages factory delegates generated from XML documents.
+/// </summary>
+public class EntityFactoryRegistry
 {
-    private static readonly Dictionary<string, EntityFactoryDelegate> Factories = new();
-    
-    public static void Load(string name, EntityFactoryDelegate factory)
+    private readonly XmlRegistry _documents;
+    private readonly ModelCache _models;
+    private readonly Dictionary<string, EntityFactoryDelegate> _factories = new();
+
+    public EntityFactoryRegistry()
     {
-        if (!Factories.TryAdd(name, factory))
-        {
-            throw new RepeatedEntityFactoryNameException(name);
-        }
+        _documents = new();
+        _models = new(_documents);
+    }
+    
+    /// <summary>
+    /// Registers a single XML document for entity generation.
+    /// </summary>
+    public void LoadXml(XmlDocument document) => _documents.Register(document);
+    
+    /// <summary>
+    /// Registers multiple XML documents for entity generation.
+    /// </summary>
+    public void LoadXml(IEnumerable<XmlDocument> documents) => _documents.Register(documents);
+
+    /// <summary>
+    /// After the factories are generated, call this to clean up
+    /// unnecessary generation data, such as the deserialized xml documents.
+    /// </summary>
+    public void ClearFactoryGenerationData()
+    {
+        _documents.Clear();
+        _models.Clear();
     }
 
-    public static void LoadFrom(XmlDocument document) =>
-        Load(document.Name, EntityDeserializer.CreateEntityFactory(document));
+ 
+    #region FACTORY_STORAGE
 
-    public static void LoadAllInDirectory(string dir, bool includeSubdirectories)
+    /// <summary>
+    /// Generates a factory method for each XML document loaded.
+    /// </summary>
+    public void RegisterAllFactories()
     {
-        foreach (var file in Directory.EnumerateFiles(dir, "*.xml"))
+        _models.LoadAll();
+        foreach (var model in _models)
         {
-            XmlDocument doc = new();
-            doc.Load(file);
-            LoadFrom(doc);
+            Register(model.Name, FactoryGenerator.CreateEntityFactory(model));
         }
-
-        if (includeSubdirectories)
-            foreach (var sub in Directory.EnumerateDirectories(dir))
-                LoadAllInDirectory(sub, includeSubdirectories);
     }
-
-    public static EntityFactoryDelegate GetFactory(string name) => Factories[name];
     
-    public static Entity CreateNew(string name, ECS world) => Factories[name](world);
-
-    public static void Clear() => Factories.Clear();
-
-    public static void Remove(string name) => Factories.Remove(name);
+    /// <summary>
+    /// Manually sets a custom factory method for a specific name.
+    /// </summary>
+    /// <exception cref="DuplicatedEntityFactoryNameException">
+    /// Thrown if a factory was already registered for <see cref="name"/>.
+    /// </exception>
+    public void Register(string name, EntityFactoryDelegate factory)
+    {
+        if (!_factories.TryAdd(name, factory))
+        {
+            throw new DuplicatedEntityFactoryNameException(name);
+        }
+    }
+    
+    /// <returns>The factory delegate assigned tot he provided name.</returns>
+    public EntityFactoryDelegate GetFactory(string name) => _factories[name];
+    
+    /// <summary>
+    /// Registers an entity in the ECS world using
+    /// a factory delegate assigned to the provided name.
+    /// </summary>
+    public Entity CreateEntity(string name, ECS world) => _factories[name](world);
+    
+    
+    #endregion
 }
