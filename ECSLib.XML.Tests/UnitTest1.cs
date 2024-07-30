@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Xml;
 using ECSLib.Components;
 using ECSLib.Entities;
@@ -35,12 +36,32 @@ public class Tests
         _world = new();
     }
 
+    private const int TestHealth = 10;
+    private const int TestDeathSound = 15;
+    private const float TestSpeed = 4.5f;
+    private const bool TestCanRun = true;
+
+    private static readonly string Xml = $"""
+                                          <?xml version="1.0" encoding="utf-8"?>
+
+                                          <Villager>
+                                              <ECSLib.XML.Tests.HealthComponent>
+                                                  <Health>{TestHealth}</Health>
+                                                  <DeathSound>{TestDeathSound}</DeathSound>
+                                              </ECSLib.XML.Tests.HealthComponent>
+                                              <ECSLib.XML.Tests.MoverComponent>
+                                                  <Speed>{TestSpeed.ToString(CultureInfo.InvariantCulture)}</Speed>
+                                                  {(TestCanRun ? "<CanRun/>" : "")}
+                                              </ECSLib.XML.Tests.MoverComponent>
+                                          </Villager>
+                                          """;
+
     [Test]
     public void Test1()
     {
         EntityFactoryRegistry factories = new();
         XmlDocument doc = new();
-        doc.Load(@"D:\MonoGameProjs\ECSLib\ECSLib.XML.Tests\Villager.xml");
+        doc.LoadXml(Xml);
         factories.LoadXml(doc);
         factories.RegisterAllFactories();
         
@@ -52,10 +73,10 @@ public class Tests
             {
                 i++;
                 Assert.That(villager.ID, Is.EqualTo(e.ID));
-                Assert.That(h.Value.Health, Is.EqualTo(10));
-                Assert.That(h.Value.DeathSound, Is.EqualTo(15));
-                Assert.That(m.Value.Speed, Is.EqualTo(4.5f));
-                Assert.That(m.Value.CanRun, Is.True);
+                Assert.That(h.Value.Health, Is.EqualTo(TestHealth));
+                Assert.That(h.Value.DeathSound, Is.EqualTo(TestDeathSound));
+                Assert.That(m.Value.Speed, Is.EqualTo(TestSpeed));
+                Assert.That(m.Value.CanRun, Is.EqualTo(TestCanRun));
             });
         Assert.That(i, Is.EqualTo(1));
         
