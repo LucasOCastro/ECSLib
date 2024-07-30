@@ -4,6 +4,18 @@ namespace ECSLib.XML.Extensions;
 
 internal static class CodeGeneratorExtension
 {
+    public static LocalBuilder EmitStructConstructor(this ILGenerator il, Type structType)
+    {
+        var local = il.DeclareLocal(structType);
+        var constructor = structType.GetConstructor(Type.EmptyTypes);
+        if (constructor != null)
+        {
+            il.Emit(OpCodes.Ldloca_S, local.LocalIndex);
+            il.Emit(OpCodes.Calli, constructor);
+        }
+        return local;
+    }
+    
     public static void EmitLoadConstant(this ILGenerator il, object value)
     {
         switch (value)
