@@ -11,11 +11,6 @@ public class ReflectionTests
         _world = new();
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     [Test]
     public void TestReflectionInit()
     {

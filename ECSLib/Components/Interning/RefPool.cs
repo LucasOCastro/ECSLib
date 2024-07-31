@@ -1,5 +1,7 @@
 ﻿namespace ECSLib.Components.Interning;
 
+//TODO deal with the nullability issue
+//TODO release stuff on entity destruction
 public static class RefPool<T> where T: class
 {
     private static readonly Dictionary<int, T?> _pool = [];
