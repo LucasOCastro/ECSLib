@@ -1,4 +1,4 @@
 ﻿namespace ECSLib.XML.Exceptions;
 
-internal class ModelDependencyLoopException(TravelLog traveledModels)
-    : Exception($"{traveledModels.Origin} depends on {traveledModels.Current}, which also depends on {traveledModels.Origin}.");
+public class ModelDependencyLoopException(string origin, string current)
+    : Exception($"{origin} depends on {current}, which also depends on {origin}.");

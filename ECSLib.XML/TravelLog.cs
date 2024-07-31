@@ -2,7 +2,7 @@
 
 namespace ECSLib.XML;
 
-public class TravelLog
+internal class TravelLog
 {
     public HashSet<string> TraveledModels { get; } = [];
     public string Origin { get; }
@@ -12,7 +12,7 @@ public class TravelLog
     {
         if (!TraveledModels.Add(model))
         {
-            throw new ModelDependencyLoopException(this);
+            throw new ModelDependencyLoopException(Origin, Current);
         }
         Current = model;
     }
