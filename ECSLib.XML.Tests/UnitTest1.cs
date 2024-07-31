@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using System.Xml;
 using ECSLib.Components;
 using ECSLib.Components.Interning;
@@ -32,18 +33,18 @@ public class Tests
                                                   <Health>{TestHealth}</Health>
                                                   <DeathSound>{TestDeathSound}</DeathSound>
                                               </ECSLib.XML.Tests.HealthComponent>
-                                              <ECSLib.XML.Tests.Components>
+                                              <ECSLib.XML.Tests.MoverComponent>
                                                   <Speed>{TestSpeed.ToString(CultureInfo.InvariantCulture)}</Speed>
                                                   {(TestCanRun ? "<CanRun/>" : "")}
-                                              </ECSLib.XML.Tests.Components>
+                                              </ECSLib.XML.Tests.MoverComponent>
                                             </Villager>
                                             <Merchant Parent="Villager">
                                                 <ECSLib.XML.Tests.HealthComponent>
                                                     <DeathSpeech>Argh! My farms!</DeathSpeech>
                                                 </ECSLib.XML.Tests.HealthComponent>
-                                                <ECSLib.XML.Tests.Components>
+                                                <ECSLib.XML.Tests.MoverComponent>
                                                   <Speed>{TestSpeedMerchant.ToString(CultureInfo.InvariantCulture)}</Speed>
-                                                </ECSLib.XML.Tests.Components>
+                                                </ECSLib.XML.Tests.MoverComponent>
                                             </Merchant>
                                           </Defs>
                                           """;
@@ -55,14 +56,15 @@ public class Tests
         XmlDocument doc = new();
         doc.LoadXml(Xml);
         factories.LoadXml(doc);
-        factories.RegisterAllFactories();
+        var assembly = Assembly.GetExecutingAssembly();
+        factories.RegisterAllFactories(assembly);
         
         //Assert the entity was created properly
         var villager = factories.CreateEntity("Villager", _world);
         var merchant = factories.CreateEntity("Merchant", _world);
         int i = 0;
-        _world.Query(Query.With<HealthComponent, Components>(),
-            (Entity e, ref Comp<HealthComponent> h, ref Comp<Components> m) =>
+        _world.Query(Query.With<HealthComponent, MoverComponent>(),
+            (Entity e, ref Comp<HealthComponent> h, ref Comp<MoverComponent> m) =>
             {
                 i++;
                 Assert.That(h.Value.Health, Is.EqualTo(TestHealth));
@@ -78,6 +80,6 @@ public class Tests
         //Assert can't register multiple factories with same name
         factories.ClearFactoryGenerationData();
         Assert.DoesNotThrow(() => factories.LoadXml(doc));
-        Assert.Throws<DuplicatedEntityFactoryNameException>(() => factories.RegisterAllFactories());
+        Assert.Throws<DuplicatedEntityFactoryNameException>(() => factories.RegisterAllFactories(assembly));
     }
 }

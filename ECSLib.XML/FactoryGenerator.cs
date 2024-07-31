@@ -44,7 +44,7 @@ internal static class FactoryGenerator
 
         foreach (var (componentTypeName, fields) in model.Components)
         {
-            var componentType = assembly.GetType(componentTypeName) ?? throw new InvalidComponentTypeNameException(componentTypeName);
+            var componentType = assembly.GetType(componentTypeName) ?? throw new InvalidComponentTypeNameException(componentTypeName, assembly);
             
             //Constructs and stores the component instance
             var componentLocal = generator.EmitStructConstructor(componentType);

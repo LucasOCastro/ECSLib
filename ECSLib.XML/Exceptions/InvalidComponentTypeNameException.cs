@@ -1,4 +1,6 @@
-﻿namespace ECSLib.XML.Exceptions;
+﻿using System.Reflection;
 
-public class InvalidComponentTypeNameException(string componentTypeName)
-    : Exception($"{componentTypeName} does not match a real component type name.");
+namespace ECSLib.XML.Exceptions;
+
+public class InvalidComponentTypeNameException(string componentTypeName, Assembly assembly)
+    : Exception($"{componentTypeName} does not match a real component type name in assembly {assembly.FullName}.");
