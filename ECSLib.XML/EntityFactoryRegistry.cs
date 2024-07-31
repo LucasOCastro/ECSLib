@@ -46,12 +46,12 @@ public class EntityFactoryRegistry
     /// <summary>
     /// Generates a factory method for each XML document loaded.
     /// </summary>
-    public void RegisterAllFactories()
+    public void RegisterAllFactories(Assembly assembly)
     {
-        _models.LoadAll();
-        foreach (var model in _models)
+        _models.InitializeAllAndVerifyLoops();
+        foreach (var model in _models.AllModels)
         {
-            Register(model.Name, FactoryGenerator.CreateEntityFactory(model, Assembly.GetCallingAssembly()));
+            Register(model.Name, FactoryGenerator.CreateEntityFactory(model, assembly));
         }
     }
     
