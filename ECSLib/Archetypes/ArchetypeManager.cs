@@ -161,7 +161,7 @@ internal partial class ArchetypeManager
     /// Stores a new component either by default value or with the value provided.
     /// </summary>
     /// <exception cref="DuplicatedComponentException">Thrown if tried to add a component the entity already has.</exception>
-    public void AddComponent(Entity entity, Type componentType)
+    private void AddComponent(Entity entity, Type componentType)
     {
         var oldArchetype = _entitiesRecords[entity].ArchetypeIndex;
         if (_archetypes[oldArchetype].Definition.Components.Contains(componentType))
@@ -177,8 +177,13 @@ internal partial class ArchetypeManager
     public void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : struct
     {
         AddComponent(entity, typeof(TComponent));
+        //I NEED to do this, because otherwise the bytes aren't filled and everything is 0.
         GetComponent<TComponent>(entity) = component;
     }
+    
+    /// <inheritdoc cref="AddComponent"/>
+    public void AddComponent<TComponent>(Entity entity) where TComponent : struct =>
+        AddComponent(entity, new TComponent());
 
     /// <summary>
     /// Updates an entity's archetype to another which includes all previous component types except the one removed.
