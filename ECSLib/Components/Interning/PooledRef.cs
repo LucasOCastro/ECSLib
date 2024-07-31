@@ -1,34 +1,21 @@
 ﻿namespace ECSLib.Components.Interning;
 
-public struct PooledRef<T> where T: class
+public readonly struct PooledRef<T> where T: class?
 {
-    private int _id = -1;
-
-    public PooledRef()
-    {
-    }
-
+    private readonly int _id;
+    
     public PooledRef(T value)
     {
-        Value = value;
-    }
-
-    public int ID
-    {
-        get
-        {
-            if (_id == -1) _id = RefPool<T>.Register();
-            return _id;
-        }
+        _id = RefPool<T>.Register(value);
     }
 
     public T Value
     {
-        get => RefPool<T>.Get(ID);
-        set => RefPool<T>.Set(ID, value);
+        get => RefPool<T>.Get(_id);
+        set => RefPool<T>.Set(_id, value);
     }
 
     public static implicit operator T(PooledRef<T> interned) => interned.Value;
 
-    public override string ToString() => Value.ToString();
+    public override string ToString() => Value?.ToString() ?? "";
 }
