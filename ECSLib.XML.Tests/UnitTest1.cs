@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Xml;
 using ECSLib.Components;
+using ECSLib.Components.Interning;
 using ECSLib.Entities;
 using ECSLib.XML.Exceptions;
 
@@ -10,6 +11,7 @@ public struct HealthComponent
 {
     public int Health = 5;
     public int DeathSound = -1;
+    public readonly PooledRef<string> DeathSpeech = new("Silent");
 
     public HealthComponent()
     {
@@ -57,6 +59,9 @@ public class Tests
                                               </ECSLib.XML.Tests.MoverComponent>
                                             </Villager>
                                             <Merchant Parent="Villager">
+                                                <ECSLib.XML.Tests.HealthComponent>
+                                                    <DeathSpeech>Argh! My farms!</DeathSpeech>
+                                                </ECSLib.XML.Tests.HealthComponent>
                                                 <ECSLib.XML.Tests.MoverComponent>
                                                   <Speed>{TestSpeedMerchant.ToString(CultureInfo.InvariantCulture)}</Speed>
                                                 </ECSLib.XML.Tests.MoverComponent>
