@@ -2,12 +2,12 @@
 
 namespace ECSLib.XML.Tests;
 
-public struct Components
+public struct MoverComponent
 {
     public float Speed = 1.0f;
     public bool CanRun = false;
 
-    public Components()
+    public MoverComponent()
     {
     }
 }

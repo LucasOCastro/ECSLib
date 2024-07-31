@@ -15,7 +15,7 @@ internal class EntityModel
     /// </summary>
     public Dictionary<string, Dictionary<string, string>> Components { get; } = [];
 
-    public List<EntityModel> Parents { get; } = [];
+    public string[] Parents { get; }
     
     /// <summary>
     /// If true, this model has been verified for inheritance loops in its parents and none were found.
@@ -25,16 +25,10 @@ internal class EntityModel
     /// <summary>
     /// Constructs the entity node initializing <see cref="Name"/> and <see cref="Parents"/>, without resolving fields.
     /// </summary>
-    public EntityModel(XmlNode entityNode, ModelCache cache)
+    public EntityModel(XmlNode entityNode)
     {
         _node = entityNode;
-
-        var parentAttribute = entityNode.Attributes?[ParentAttributeName];
-        if (parentAttribute != null)
-        {
-            var parents = parentAttribute.Value.Split(ParentAttributeSeparator);
-            Parents.AddRange(parents.Select(cache.Request));
-        }
+        Parents = entityNode.Attributes?[ParentAttributeName]?.Value.Split(ParentAttributeSeparator) ?? [];
     }
     
     private void SetField(string componentType, string field, string value)
@@ -57,11 +51,11 @@ internal class EntityModel
     /// <summary>
     /// Fills <see cref="Components"/> considering inheritance. Assumes parents' fields are already resolved.
     /// </summary>
-    public void ResolveFields()
+    public void ResolveFields(ModelCache cache)
     {
         foreach (var parent in Parents)
         {
-            CopyComponentsFrom(parent.Components);
+            CopyComponentsFrom(cache.Request(parent).Components);
         }
         
         foreach (XmlNode componentNode in _node.ChildNodes)

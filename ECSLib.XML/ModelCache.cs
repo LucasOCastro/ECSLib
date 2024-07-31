@@ -26,7 +26,7 @@ internal class ModelCache
         if (_models.TryGetValue(name, out var model)) return model;
         
         var def = _xmlStorage.Get(name);
-        model = new(def, this);
+        model = new(def);
         _models.Add(name, model);
         return model;
     }
@@ -37,9 +37,9 @@ internal class ModelCache
     /// <exception cref="Exceptions.ModelDependencyLoopException">
     /// Thrown if the recursion detects a looping dependency.
     /// </exception>
-    private static void VerifyLoopAndResolveFieldsRecursive(EntityModel current, TravelLog log)
+    private void VerifyLoopAndResolveFieldsRecursive(EntityModel current, TravelLog log)
     {
-        foreach (var parent in current.Parents)
+        foreach (var parent in current.Parents.Select(Request))
         {
             log.Step(parent);
             VerifyLoopAndResolveFieldsRecursive(parent, log);
@@ -50,7 +50,7 @@ internal class ModelCache
         //processed and had their fields resolved. Therefore, it is possible to resolve its fields here.
         if (!current.ClearedOfLoops)
         {
-            current.ResolveFields();
+            current.ResolveFields(this);
             current.ClearedOfLoops = true;
         }
     }

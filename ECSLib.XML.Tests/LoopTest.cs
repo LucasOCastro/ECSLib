@@ -1,16 +1,14 @@
-﻿using System.Xml;
+﻿using System.Reflection;
+using System.Xml;
 using ECSLib.XML.Exceptions;
 
 namespace ECSLib.XML.Tests;
 
 public class LoopTest
 {
-    private ECS _world;
-    
     [SetUp]
     public void Setup()
     {
-        _world = new();
     }
 
     private const string Xml = $"""
@@ -34,6 +32,7 @@ public class LoopTest
         doc.LoadXml(Xml);
         factories.LoadXml(doc);
         
-        Assert.Throws<ModelDependencyLoopException>(factories.RegisterAllFactories);
+        var assembly = Assembly.GetExecutingAssembly();
+        Assert.Throws<ModelDependencyLoopException>(() => factories.RegisterAllFactories(assembly));
     }
 }
