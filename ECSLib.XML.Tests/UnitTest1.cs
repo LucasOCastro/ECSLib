@@ -7,27 +7,6 @@ using ECSLib.XML.Exceptions;
 
 namespace ECSLib.XML.Tests;
 
-public struct HealthComponent
-{
-    public int Health = 5;
-    public int DeathSound = -1;
-    public readonly PooledRef<string> DeathSpeech = new("Silent");
-
-    public HealthComponent()
-    {
-    }
-}
-
-public struct MoverComponent
-{
-    public float Speed = 1.0f;
-    public bool CanRun = false;
-
-    public MoverComponent()
-    {
-    }
-}
-
 public class Tests
 {
     private ECS _world;
@@ -53,18 +32,18 @@ public class Tests
                                                   <Health>{TestHealth}</Health>
                                                   <DeathSound>{TestDeathSound}</DeathSound>
                                               </ECSLib.XML.Tests.HealthComponent>
-                                              <ECSLib.XML.Tests.MoverComponent>
+                                              <ECSLib.XML.Tests.Components>
                                                   <Speed>{TestSpeed.ToString(CultureInfo.InvariantCulture)}</Speed>
                                                   {(TestCanRun ? "<CanRun/>" : "")}
-                                              </ECSLib.XML.Tests.MoverComponent>
+                                              </ECSLib.XML.Tests.Components>
                                             </Villager>
                                             <Merchant Parent="Villager">
                                                 <ECSLib.XML.Tests.HealthComponent>
                                                     <DeathSpeech>Argh! My farms!</DeathSpeech>
                                                 </ECSLib.XML.Tests.HealthComponent>
-                                                <ECSLib.XML.Tests.MoverComponent>
+                                                <ECSLib.XML.Tests.Components>
                                                   <Speed>{TestSpeedMerchant.ToString(CultureInfo.InvariantCulture)}</Speed>
-                                                </ECSLib.XML.Tests.MoverComponent>
+                                                </ECSLib.XML.Tests.Components>
                                             </Merchant>
                                           </Defs>
                                           """;
@@ -82,8 +61,8 @@ public class Tests
         var villager = factories.CreateEntity("Villager", _world);
         var merchant = factories.CreateEntity("Merchant", _world);
         int i = 0;
-        _world.Query(Query.With<HealthComponent, MoverComponent>(),
-            (Entity e, ref Comp<HealthComponent> h, ref Comp<MoverComponent> m) =>
+        _world.Query(Query.With<HealthComponent, Components>(),
+            (Entity e, ref Comp<HealthComponent> h, ref Comp<Components> m) =>
             {
                 i++;
                 Assert.That(h.Value.Health, Is.EqualTo(TestHealth));
