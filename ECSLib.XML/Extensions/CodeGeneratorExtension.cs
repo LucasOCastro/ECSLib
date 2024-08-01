@@ -16,7 +16,7 @@ internal static class CodeGeneratorExtension
         return local;
     }
     
-    public static void EmitLoadConstant(this ILGenerator il, object value)
+    public static void EmitLoadConstant(this ILGenerator il, object? value)
     {
         switch (value)
         {
@@ -55,6 +55,9 @@ internal static class CodeGeneratorExtension
                 break;
             case string str:
                 il.Emit(OpCodes.Ldstr, str);
+                break;
+            case null:
+                il.Emit(OpCodes.Ldnull);
                 break;
             default:
                 throw new ArgumentException("Unsupported type " + value.GetType().FullName + " for loading as constant in IL code.");

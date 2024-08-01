@@ -17,7 +17,7 @@ internal static class FactoryGenerator
         typeof(ECS).GetMethods(BindingFlags.Instance | BindingFlags.Public)
             .First(m => m.Name == nameof(ECS.AddComponent) && m.GetParameters().Length == 2);
 
-    private static object? ConvertString(string value, Type type)
+    private static object ConvertString(string value, Type type)
     {
         //Can simply set to true by including <booleanField/>
         if (type == typeof(bool) && string.IsNullOrEmpty(value))
