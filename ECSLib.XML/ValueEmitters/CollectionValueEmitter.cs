@@ -27,7 +27,7 @@ internal class CollectionValueEmitter  : IValueEmitter
 
     private void EmitAsICollection(ILGenerator il, Type collectionType, Type itemType)
     {
-        var addMethod = collectionType.GetMethod(nameof(List<object>.Add), [itemType]);
+        var addMethod = collectionType.GetMethod(nameof(ICollection<int>.Add), [itemType]);
         var ctor = collectionType.GetConstructor(Type.EmptyTypes);
         il.Emit(OpCodes.Newobj, ctor);
 
@@ -36,13 +36,14 @@ internal class CollectionValueEmitter  : IValueEmitter
             il.Emit(OpCodes.Dup);
             item.Emit(il, itemType);
             il.Emit(OpCodes.Call, addMethod);
+            if (addMethod.ReturnType != null && addMethod.ReturnType != typeof(void)) 
+                il.Emit(OpCodes.Pop);
         }   
     }
 
     public void Emit(ILGenerator il, Type type)
     {
-        var itemType = type.GetGenericArguments()[0];
-        if (type.IsArray) EmitAsArray(il, itemType);
-        else EmitAsICollection(il, type, itemType);
+        if (type.IsArray) EmitAsArray(il, type.GetElementType());
+        else EmitAsICollection(il, type, type.GetGenericArguments()[0]);
     }
 }
