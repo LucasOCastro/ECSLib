@@ -1,25 +1,33 @@
 ﻿namespace ECSLib.Entities;
 
-public class EntityManager
+internal class EntityManager
 {
     /// <summary>
     /// Stores the ids which have been freed on entity deletion and should be used next.
     /// </summary>
-    private readonly Queue<int> _freedIds = new();
-    private int _entityCount;
+    private readonly Queue<int> _freedIds = [];
+    
+    /// <summary>
+    /// Maps each entity id to the current generation.
+    /// </summary>
+    private readonly List<int> _generations = [];
 
-    private int GetNextId() => _freedIds.TryDequeue(out int index) ? index : _entityCount;
+    private int GetNextId() => _freedIds.TryDequeue(out int index) ? index : _generations.Count;
     
     public Entity CreateEntity()
     {
         int id = GetNextId();
-        _entityCount++;
-        return new(id);
+        if (id >= _generations.Count)
+            _generations.Add(0);
+        return new(id, _generations[id]);
     }
     
     public void RemoveEntity(Entity entity)
     {
+        _generations[entity.ID]++;
         _freedIds.Enqueue(entity.ID);
-        _entityCount--;
     }
+
+    public bool IsValid(Entity entity) =>
+        entity.ID < _generations.Count && entity.Generation == _generations[entity.ID];
 }

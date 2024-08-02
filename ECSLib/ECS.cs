@@ -54,6 +54,9 @@ public sealed partial class ECS
         _archetypeManager.Unregister(entity);
         _entityManager.RemoveEntity(entity);
     }
+
+    /// <returns>true if the stored entity is valid, false if it has been destroyed.</returns>
+    public bool IsEntityValid(Entity entity) => _entityManager.IsValid(entity);
     
     #endregion
     
