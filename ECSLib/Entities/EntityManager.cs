@@ -5,10 +5,10 @@ public class EntityManager
     /// <summary>
     /// Stores the ids which have been freed on entity deletion and should be used next.
     /// </summary>
-    private readonly Stack<int> _freedIdStack = new();
+    private readonly Queue<int> _freedIds = new();
     private int _entityCount;
 
-    private int GetNextId() => _freedIdStack.TryPop(out int index) ? index : _entityCount;
+    private int GetNextId() => _freedIds.TryDequeue(out int index) ? index : _entityCount;
     
     public Entity CreateEntity()
     {
@@ -19,7 +19,7 @@ public class EntityManager
     
     public void RemoveEntity(Entity entity)
     {
-        _freedIdStack.Push(entity.ID);
+        _freedIds.Enqueue(entity.ID);
         _entityCount--;
     }
 }
