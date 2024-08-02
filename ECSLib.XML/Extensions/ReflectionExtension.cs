@@ -19,4 +19,12 @@ internal static class ReflectionExtension
             PropertyInfo property => property.PropertyType,
             _ => throw new ArgumentException("Member is neither field or property.")
         };
+
+    public static bool IsCollection(this Type type)
+    {
+        var args = type.GetGenericArguments();
+        if (args.Length == 1 && typeof(ICollection<>).MakeGenericType(args).IsAssignableFrom(type))
+            return true;
+        return type.BaseType != null && type.BaseType.IsCollection();
+    }
 }
