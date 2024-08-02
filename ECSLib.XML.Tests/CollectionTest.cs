@@ -32,6 +32,16 @@ public class CollectionTest
                                      <Dialogues>
                                          <li>Custom Dialogue</li>
                                      </Dialogues>
+                                     <Dict>
+                                        <li>
+                                            <key>1</key>
+                                            <value>First One</value>
+                                        </li>
+                                        <li>
+                                            <key>57</key>
+                                            <value>another !!</value>
+                                        </li>
+                                    </Dict>
                                    </ECSLib.XML.Tests.DialogueComponent>
                                  </Villager>
                                </Defs>
@@ -55,6 +65,7 @@ public class CollectionTest
             Assert.That(dialogue.Array.Value, Is.Empty);
             Assert.That(dialogue.Set.Value, Is.EquivalentTo(new ulong[]{500, 6}));
             Assert.That(dialogue.Dialogues.Value, Is.EquivalentTo(new []{"Custom Dialogue"}));
+            Assert.That(dialogue.Dict.Value, Is.EquivalentTo(new KeyValuePair<int,string>[] {new(1, "First One"), new(57, "another !!")}));
         });
     }
 }
