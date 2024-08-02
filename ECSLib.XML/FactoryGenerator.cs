@@ -45,7 +45,7 @@ internal static class FactoryGenerator
             var addComponentMethodInfo = AddComponentGenericMethodInfo.MakeGenericMethod(componentType);
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldloc, entityLocal);
-            generator.Emit(OpCodes.Ldloc, compEmitter.ComponentLocal);
+            generator.Emit(OpCodes.Ldloc, compEmitter.ComponentLocal!);
             generator.Emit(OpCodes.Call, addComponentMethodInfo);
         }
 

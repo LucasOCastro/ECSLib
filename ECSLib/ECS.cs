@@ -5,6 +5,7 @@ using ECSLib.Systems;
 
 namespace ECSLib;
 
+// ReSharper disable once PartialTypeWithSinglePart
 public sealed partial class ECS
 {
     private readonly EntityManager _entityManager = new();

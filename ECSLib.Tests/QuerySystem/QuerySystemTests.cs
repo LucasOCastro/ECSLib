@@ -38,7 +38,7 @@ public class QuerySystemTests
         _world.AddComponent<TestComponentB>(entityD, new(){ValueDbl = 3.0});
         
         //Create one entity with no component
-        var entityE = _world.CreateEntity();
+        _world.CreateEntity();
         Assert.Multiple(() =>
         {
             List<Entity> resultList = [];
@@ -87,7 +87,7 @@ public class QuerySystemTests
         _world.AddComponent<TestComponentB>(entityC, new(){ValueDbl = 3.1});
         
         //Create one entity with no component
-        var entityE = _world.CreateEntity();
+        _world.CreateEntity();
         
         //Register one system and assert it was registered
         _world.RegisterSystem<TestSystemA>();

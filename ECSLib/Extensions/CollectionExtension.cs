@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-
-namespace ECSLib.Extensions;
+﻿namespace ECSLib.Extensions;
 
 public static class CollectionExtension
 {

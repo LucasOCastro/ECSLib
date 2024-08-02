@@ -24,6 +24,7 @@ internal partial class TestSystemB : BaseSystem
 }
     
 [ECSSystemClass]
+// ReSharper disable once InconsistentNaming
 internal partial class TestSystemAB : BaseSystem
 {
     [ECSSystem]

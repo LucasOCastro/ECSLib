@@ -18,7 +18,7 @@ public class StressTest
     
     private const int ACompCount = 10000;
     private const int BCompCount = 15280;
-    private const int ABCompCount = 12347;
+    private const int AbCompCount = 12347;
     private const int NoCompCount = 5422;
     private const int Iterations = 100;
     private const double ABaseValue = 9017.463;
@@ -52,7 +52,7 @@ public class StressTest
             _world.AddComponent<TestComponentB>(entity, new(){ValueInt = BBaseValue});
         }
         
-        for (int i = 0; i < ABCompCount; i++)
+        for (int i = 0; i < AbCompCount; i++)
         {
             var entity = _world.CreateEntity();
             _world.AddComponent<TestComponentA>(entity, new(){ValueDbl = ABaseValue});

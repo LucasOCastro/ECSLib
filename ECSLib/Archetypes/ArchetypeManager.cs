@@ -5,6 +5,7 @@ using ECSLib.Extensions;
 
 namespace ECSLib.Archetypes;
 
+// ReSharper disable once PartialTypeWithSinglePart
 internal partial class ArchetypeManager
 {
     #region COLLECTIONS

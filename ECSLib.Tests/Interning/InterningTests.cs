@@ -58,7 +58,7 @@ public class InterningTests
         comp.List.Value = [150];
         Assert.That(comp.List.Value, Is.EquivalentTo(new [] {150}));
 
-        comp.Array.Value = null;
+        comp.Array.Value = null!;
         Assert.That(comp.Array.Value, Is.Null);
         
         comp.Array.Value = new int[10];
