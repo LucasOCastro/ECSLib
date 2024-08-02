@@ -50,7 +50,7 @@ internal class EntityModel
         fields[field] = emitter;
     }
 
-    //TODO currently for lists and such it is adding instead of replacing, add a Inherit=false attribute to field
+    //TODO currently for lists and such it is replacing and cant add, make a Inherit=false attribute to field
     private void CopyComponentsFrom(Dictionary<string, Dictionary<string, IValueEmitter>> components)
     {
         foreach (var (type, fromFields) in components)

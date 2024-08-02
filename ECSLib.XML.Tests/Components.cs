@@ -22,3 +22,15 @@ public struct HealthComponent
     {
     }
 }
+
+public struct DialogueComponent
+{
+    public PooledRef<List<int>> PricesList = new([1, 2, 3]);
+    public PooledRef<float[]> Array = new([-1.56f]);
+    public PooledRef<HashSet<ulong>> Set = new([]);
+    public PooledRef<string[]> Dialogues = new(["Default Dialogue"]);
+
+    public DialogueComponent()
+    {
+    }
+}

@@ -18,7 +18,7 @@ internal static class FactoryGenerator
     public static EntityFactoryDelegate CreateEntityFactory(EntityModel model, Assembly assembly)
     {
         DynamicMethod dynamicMethod = new(
-            name: model.Name,
+            name: model.Name + "Factory",
             returnType: typeof(Entity),
             parameterTypes: [typeof(ECS)],
             m: typeof(FactoryGenerator).Module
