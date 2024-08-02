@@ -1,5 +1,4 @@
 ﻿using System.Xml;
-using ECSLib.XML.Exceptions;
 using ECSLib.XML.ValueEmitters;
 
 namespace ECSLib.XML;
@@ -8,7 +7,6 @@ internal class EntityModel
 {
     private const string ParentAttributeName = "Parent";
     private const string ParentAttributeSeparator = ";;";
-    private const string ListItemNodeName = "li";
 
     private readonly XmlNode _node;
     public string Name => _node.Name;
@@ -57,28 +55,6 @@ internal class EntityModel
         foreach (var (field, value) in fromFields)
             SetField(type, field, value);
     }
-
-    private static IValueEmitter GetEmitterForFieldValue(XmlNode fieldNode)
-    {
-        if (fieldNode is XmlElement {IsEmpty: true})
-            return new EmptyValueEmitter();
-        
-        if (fieldNode.ChildNodes is [{ NodeType: XmlNodeType.Text }])
-            return new TextValueEmitter(fieldNode.ChildNodes[0]?.Value ?? "");
-        
-        bool isList = false;
-        List<IValueEmitter> multipleValues = [];
-        foreach (XmlNode itemNode in fieldNode.ChildNodes)
-        {
-            if (itemNode.NodeType != XmlNodeType.Element) continue;
-
-            if (itemNode.Name == ListItemNodeName) isList = true;
-            else if (isList) throw new NodeHasListAndNonListChildrenException(fieldNode);
-            multipleValues.Add(GetEmitterForFieldValue(itemNode));
-        }
-
-        return new CollectionValueEmitter(multipleValues);
-    }
     
     /// <summary>
     /// Fills <see cref="Components"/> considering inheritance. Assumes parents' fields are already resolved.
@@ -97,7 +73,7 @@ internal class EntityModel
             foreach (XmlNode fieldNode in componentNode.ChildNodes)
             {
                 if (fieldNode.NodeType != XmlNodeType.Element) continue;
-                var emitter = GetEmitterForFieldValue(fieldNode);
+                var emitter = ValueEmitterUtility.GetEmitterForNode(fieldNode);
                 SetField(componentNode.Name, fieldNode.Name, emitter);
             }
         }

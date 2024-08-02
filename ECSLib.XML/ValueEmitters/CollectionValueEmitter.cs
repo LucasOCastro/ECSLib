@@ -29,7 +29,7 @@ internal class CollectionValueEmitter  : IValueEmitter
     {
         var addMethod = collectionType.GetMethod(nameof(ICollection<int>.Add), [itemType]);
         var ctor = collectionType.GetConstructor(Type.EmptyTypes);
-        if (addMethod == null || ctor == null) throw new("Missing methods for collection emission.");
+        if (addMethod == null || ctor == null) throw new MissingMethodException("Missing methods for collection emission.");
         il.Emit(OpCodes.Newobj, ctor);
 
         foreach (var item in _items)
@@ -39,7 +39,7 @@ internal class CollectionValueEmitter  : IValueEmitter
             il.Emit(OpCodes.Call, addMethod);
             if (addMethod.ReturnType != null && addMethod.ReturnType != typeof(void)) 
                 il.Emit(OpCodes.Pop);
-        }   
+        }
     }
 
     public void Emit(ILGenerator il, Type type)

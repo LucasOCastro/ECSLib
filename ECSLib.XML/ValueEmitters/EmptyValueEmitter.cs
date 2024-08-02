@@ -21,6 +21,13 @@ internal class EmptyValueEmitter : IValueEmitter
             return;
         }
 
+        if (!type.IsByRef)
+        {
+            StructValueEmitter structEmitter = new([]);
+            structEmitter.Emit(il, type);
+            return;
+        }
+
         throw new NotSupportedException($"{type.FullName} is not a supported type for empty XML tags.");
     }
 }
