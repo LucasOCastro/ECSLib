@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using ECSLib.XML.ValueEmitters;
 
 namespace ECSLib.XML;
 
@@ -13,7 +14,7 @@ internal class EntityModel
     /// <summary>
     /// Maps component type name to a dict which maps field name to field value.
     /// </summary>
-    public Dictionary<string, Dictionary<string, string>> Components { get; } = [];
+    public Dictionary<string, Dictionary<string, IValueEmitter>> Components { get; } = [];
 
     public string[] Parents { get; }
     
@@ -30,24 +31,31 @@ internal class EntityModel
         _node = entityNode;
         Parents = entityNode.Attributes?[ParentAttributeName]?.Value.Split(ParentAttributeSeparator) ?? [];
     }
-    
-    private void SetField(string componentType, string field, string value)
+
+    private Dictionary<string, IValueEmitter> GetComponent(string componentType)
     {
         if (!Components.TryGetValue(componentType, out var fields))
         {
             fields = new();
             Components.Add(componentType, fields);
         }
-        fields[field] = value;
+        return fields;
     }
 
-    private void CopyComponentsFrom(Dictionary<string, Dictionary<string, string>> components)
+    private void SetField(string componentType, string field, IValueEmitter emitter)
+    {
+        var fields = GetComponent(componentType);
+        fields[field] = emitter;
+    }
+
+    //TODO currently for lists and such it is replacing and cant add, make a Inherit=false attribute to field
+    private void CopyComponentsFrom(Dictionary<string, Dictionary<string, IValueEmitter>> components)
     {
         foreach (var (type, fromFields) in components)
         foreach (var (field, value) in fromFields)
             SetField(type, field, value);
     }
-
+    
     /// <summary>
     /// Fills <see cref="Components"/> considering inheritance. Assumes parents' fields are already resolved.
     /// </summary>
@@ -65,7 +73,8 @@ internal class EntityModel
             foreach (XmlNode fieldNode in componentNode.ChildNodes)
             {
                 if (fieldNode.NodeType != XmlNodeType.Element) continue;
-                SetField(componentNode.Name, fieldNode.Name, fieldNode.InnerText);
+                var emitter = ValueEmitterUtility.GetEmitterForNode(fieldNode);
+                SetField(componentNode.Name, fieldNode.Name, emitter);
             }
         }
     }

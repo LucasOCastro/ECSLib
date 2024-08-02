@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Xml;
 using ECSLib.Components;
-using ECSLib.Components.Interning;
 using ECSLib.Entities;
 using ECSLib.XML.Exceptions;
 
@@ -24,6 +23,7 @@ public class Tests
     private const bool TestCanRun = true;
     private const float TestSpeedMerchant = 2.0f;
 
+    // ReSharper disable once HeuristicUnreachableCode
     private static readonly string Xml = $"""
                                           <?xml version="1.0" encoding="utf-8"?>
 
@@ -60,7 +60,7 @@ public class Tests
         factories.RegisterAllFactories(assembly);
         
         //Assert the entity was created properly
-        var villager = factories.CreateEntity("Villager", _world);
+        factories.CreateEntity("Villager", _world);
         var merchant = factories.CreateEntity("Merchant", _world);
         int i = 0;
         _world.Query(Query.With<HealthComponent, MoverComponent>(),

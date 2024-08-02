@@ -54,6 +54,8 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
     public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right) => !(left == right);
 
 
+    
+    // ReSharper disable once NotDisposedResourceIsReturned
     public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)_array).GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     
