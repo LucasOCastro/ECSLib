@@ -1,3 +1,3 @@
 ﻿namespace ECSLib.Entities;
 
-public readonly record struct Entity(int ID);
+public readonly record struct Entity(int ID, int Generation);

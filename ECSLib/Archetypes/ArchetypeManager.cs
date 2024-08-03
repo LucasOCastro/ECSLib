@@ -181,10 +181,6 @@ internal partial class ArchetypeManager
         //I NEED to do this, because otherwise the bytes aren't filled and everything is 0.
         GetComponent<TComponent>(entity) = component;
     }
-    
-    /// <inheritdoc cref="AddComponent"/>
-    public void AddComponent<TComponent>(Entity entity) where TComponent : struct =>
-        AddComponent(entity, new TComponent());
 
     /// <summary>
     /// Updates an entity's archetype to another which includes all previous component types except the one removed.

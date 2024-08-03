@@ -8,6 +8,9 @@ namespace ECSLib;
 // ReSharper disable once PartialTypeWithSinglePart
 public sealed partial class ECS
 {
+    public delegate void OnEntityDestroyedDelegate(Entity entity);
+    public event OnEntityDestroyedDelegate? OnEntityDestroyed;
+    
     private readonly EntityManager _entityManager = new();
     private readonly ArchetypeManager _archetypeManager = new();
     private readonly SystemManager _systemManager = new();
@@ -53,7 +56,11 @@ public sealed partial class ECS
     {
         _archetypeManager.Unregister(entity);
         _entityManager.RemoveEntity(entity);
+        OnEntityDestroyed?.Invoke(entity);
     }
+
+    /// <returns>true if the stored entity is valid, false if it has been destroyed.</returns>
+    public bool IsEntityValid(Entity entity) => _entityManager.IsValid(entity);
     
     #endregion
     
@@ -64,17 +71,17 @@ public sealed partial class ECS
     {
         return ref _archetypeManager.GetComponent<TComponent>(entity);
     }
-
-    /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}(Entity)"/>
-    public void AddComponent<TComponent>(Entity entity) where TComponent : struct
-    {
-        _archetypeManager.AddComponent<TComponent>(entity);
-    }
     
     /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}(Entity, TComponent)"/>
     public void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : struct
     {
         _archetypeManager.AddComponent(entity, component);
+    }
+    
+    /// <inheritdoc cref="ArchetypeManager.AddComponent{TComponent}(Entity, TComponent)"/>
+    public void AddComponent<TComponent>(Entity entity) where TComponent : struct
+    {
+        AddComponent(entity, new TComponent());
     }
     
     /// <inheritdoc cref="ArchetypeManager.RemoveComponent{TComponent}"/>
