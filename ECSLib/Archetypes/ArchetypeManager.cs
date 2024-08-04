@@ -108,6 +108,23 @@ internal partial class ArchetypeManager
         _entitiesRecords.Add(entity, record);
         _archetypeIndexToEntities[0].Add(entity);
     }
+
+    /// <summary>
+    /// Registers an entity to the archetype storage with the provided archetype.
+    /// </summary>
+    /// <remarks>
+    /// <b>
+    /// WARNING: You MUST initialize components manually using <see cref="SetComponent{TComponent}"/>.
+    /// </b>
+    /// </remarks>
+    public void RegisterEntityInArchetype(Entity entity, IEnumerable<Type> archetype)
+    {
+        var archetypeIndex = GetOrCreateArchetype(archetype);
+        int indexInComponentSet = RegisterNewEntityForArchetype(archetypeIndex);
+        ArchetypeRecord record = new(archetypeIndex, indexInComponentSet);
+        _entitiesRecords.Add(entity, record);
+        _archetypeIndexToEntities[archetypeIndex].Add(entity);
+    }
     
     /// <summary>
     /// Changes the archetype of an entity, copying its components
@@ -214,6 +231,14 @@ internal partial class ArchetypeManager
         }
         return ref _archetypes[record.ArchetypeIndex].Components.Get<TComponent>(record.EntityIndexInArchetype);
     }
+
+    /// <summary>
+    /// Replaces the value of a component in an entity.<br/>
+    /// Equivalent to <see cref="GetComponent{TComponent}"/> = <see cref="value"/>;
+    /// </summary>
+    public void SetComponent<TComponent>(Entity entity, TComponent value) where TComponent : struct =>
+        GetComponent<TComponent>(entity) = value;
+
     #endregion
     
     #region QUERYING

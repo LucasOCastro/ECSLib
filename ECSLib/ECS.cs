@@ -50,6 +50,16 @@ public sealed partial class ECS
         _archetypeManager.RegisterEmptyEntity(entity);
         return entity;
     }
+
+    /// <summary>Registers a new entity with the defined components.</summary>
+    /// <remarks><inheritdoc cref="ArchetypeManager.RegisterEntityInArchetype" path="remarks"/></remarks>
+    /// <returns> The new entity. </returns>
+    public Entity CreateEntityWithComponents(IEnumerable<Type> components)
+    {
+        var entity = _entityManager.CreateEntity();
+        _archetypeManager.RegisterEntityInArchetype(entity, components);
+        return entity;
+    }
     
     /// <summary> Unregisters an entity and all of its components. </summary>
     public void DestroyEntity(Entity entity)
@@ -88,6 +98,12 @@ public sealed partial class ECS
     public void RemoveComponent<TComponent>(Entity entity) where TComponent : struct
     {
         _archetypeManager.RemoveComponent<TComponent>(entity);
+    }
+
+    /// <inheritdoc cref="ArchetypeManager.SetComponent{TComponent}"/>
+    public void SetComponent<TComponent>(Entity entity, TComponent value) where TComponent : struct
+    {
+        _archetypeManager.SetComponent(entity, value);
     }
 
     #endregion

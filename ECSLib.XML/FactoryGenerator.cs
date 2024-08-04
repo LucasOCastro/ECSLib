@@ -10,11 +10,11 @@ namespace ECSLib.XML;
 internal static class FactoryGenerator
 {
     private static readonly MethodInfo CreateEntityMethodInfo =
-        typeof(ECS).GetMethod(nameof(ECS.CreateEntity), BindingFlags.Instance | BindingFlags.Public)!;
+        typeof(ECS).GetMethod(nameof(ECS.CreateEntityWithComponents), 
+            BindingFlags.Instance | BindingFlags.Public, [typeof(IEnumerable<Type>)])!;
 
-    private static readonly MethodInfo AddComponentGenericMethodInfo =
-        typeof(ECS).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-            .First(m => m.Name == nameof(ECS.AddComponent) && m.GetParameters().Length == 2);
+    private static readonly MethodInfo SetComponentGenericMethodInfo =
+        typeof(ECS).GetMethod(nameof(ECS.SetComponent), BindingFlags.Instance | BindingFlags.Public)!;
 
     private static readonly MethodInfo BeginContextMethodInfo =
         typeof(RefPoolContext).GetMethod(nameof(RefPoolContext.BeginContext),
@@ -24,8 +24,16 @@ internal static class FactoryGenerator
         typeof(RefPoolContext).GetMethod(nameof(RefPoolContext.EndContext),
             BindingFlags.Static | BindingFlags.Public, [typeof(Entity), typeof(ECS)])!;
 
+    private static readonly MethodInfo TypeFromHandleMethodInfo =
+        typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle), BindingFlags.Static | BindingFlags.Public)!;
+    
     public static EntityFactoryDelegate CreateEntityFactory(EntityModel model, Assembly assembly)
     {
+        var components = model.Components.Select(pair => (
+            Type: assembly.GetType(pair.Key) ?? throw new InvalidComponentTypeNameException(pair.Key, assembly),
+            Fields: pair.Value
+        )).ToList();
+        
         DynamicMethod dynamicMethod = new(
             name: model.Name + "Factory",
             returnType: typeof(Entity),
@@ -33,17 +41,23 @@ internal static class FactoryGenerator
             m: typeof(FactoryGenerator).Module
         );
         var generator = dynamicMethod.GetILGenerator();
-
-        //Entity entity = world.CreateEntity();
+        
+        //Entity entity = world.CreateEntityWithComponents(FactoryGenerator.GetTypes(name);
         var entityLocal = generator.DeclareLocal(typeof(Entity));
         generator.Emit(OpCodes.Ldarg_0);
+        //Create type array to insert directly into archetype
+        generator.Emit(OpCodes.Ldc_I4, components.Count);
+        generator.Emit(OpCodes.Newarr, typeof(Type));
+        for (int i = 0; i < components.Count; i++)
+        {
+            generator.Emit(OpCodes.Dup);
+            generator.Emit(OpCodes.Ldc_I4, i);
+            generator.Emit(OpCodes.Ldtoken, components[i].Type);
+            generator.Emit(OpCodes.Call, TypeFromHandleMethodInfo);
+            generator.Emit(OpCodes.Stelem_Ref);
+        }
         generator.Emit(OpCodes.Call, CreateEntityMethodInfo);
         generator.Emit(OpCodes.Stloc, entityLocal);
-
-        var components = model.Components.Select(pair => (
-            Type: assembly.GetType(pair.Key) ?? throw new InvalidComponentTypeNameException(pair.Key, assembly),
-            Fields: pair.Value
-        )).ToList();
         
         bool hasInternedFields = components.Any(c => InternedComponentTypesCache.HasInternedField(c.Type));
         if (hasInternedFields)
@@ -62,11 +76,11 @@ internal static class FactoryGenerator
          
             //TODO adding one comp per comp is not very efficient
             //ecs.AddComponent(entity, component);
-            var addComponentMethodInfo = AddComponentGenericMethodInfo.MakeGenericMethod(componentType);
+            var setComponentMethodInfo = SetComponentGenericMethodInfo.MakeGenericMethod(componentType);
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldloc, entityLocal);
             generator.Emit(OpCodes.Ldloc, compEmitter.ComponentLocal!);
-            generator.Emit(OpCodes.Call, addComponentMethodInfo);
+            generator.Emit(OpCodes.Call, setComponentMethodInfo);
         }
 
         if (hasInternedFields)
