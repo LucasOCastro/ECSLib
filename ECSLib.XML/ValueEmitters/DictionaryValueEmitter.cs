@@ -2,7 +2,7 @@
 
 namespace ECSLib.XML.ValueEmitters;
 
-internal class DictionaryValueEmitter : IValueEmitter
+internal class DictionaryValueEmitter : IMergeableValueEmitter
 {
     private readonly List<KeyValuePair<IValueEmitter, IValueEmitter>> _items;
 
@@ -10,8 +10,7 @@ internal class DictionaryValueEmitter : IValueEmitter
     {
         _items = items;
     }
-
-
+    
     public void Emit(ILGenerator il, Type type)
     {
         var keyType = type.GetGenericArguments()[0];
@@ -30,5 +29,11 @@ internal class DictionaryValueEmitter : IValueEmitter
             if (addMethod.ReturnType != null && addMethod.ReturnType != typeof(void)) 
                 il.Emit(OpCodes.Pop);
         }   
+    }
+
+    public void MergeWith(IValueEmitter other)
+    {
+        if (other is not DictionaryValueEmitter otherDict) return;
+        _items.AddRange(otherDict._items);
     }
 }

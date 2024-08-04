@@ -49,7 +49,6 @@ internal class EntityModel
         fields[field] = emitter;
     }
 
-    //TODO currently for lists and such it is replacing and cant add, make a Inherit=false attribute to field
     private void CopyComponentsFrom(Dictionary<string, Dictionary<string, IValueEmitter>> components)
     {
         foreach (var (type, fromFields) in components)
@@ -71,9 +70,7 @@ internal class EntityModel
         {
             if (componentNode.NodeType != XmlNodeType.Element) continue;
 
-            var compInheritAttribute = componentNode.Attributes?[InheritAttributeName];
-            if (compInheritAttribute != null 
-                && bool.TryParse(compInheritAttribute.Value, out var compInherit) 
+            if (bool.TryParse(componentNode.Attributes?[InheritAttributeName]?.Value, out var compInherit) 
                 && !compInherit)
                 Components.Remove(componentNode.Name);
 
@@ -81,6 +78,18 @@ internal class EntityModel
             {
                 if (fieldNode.NodeType != XmlNodeType.Element) continue;
                 var emitter = ValueEmitterUtility.GetEmitterForNode(fieldNode);
+                
+                //If the field is already filled, is mergeable and the inherit attribute is true,
+                //merge the two new value with the current value instead of replacing
+                if (GetComponent(componentNode.Name).TryGetValue(fieldNode.Name, out var currentEmitter)
+                    && currentEmitter is IMergeableValueEmitter mergeable
+                    && bool.TryParse(fieldNode.Attributes?[InheritAttributeName]?.Value, out var fieldInherit)
+                    && fieldInherit)
+                {
+                    mergeable.MergeWith(emitter);
+                    continue;
+                }
+                
                 SetField(componentNode.Name, fieldNode.Name, emitter);
             }
         }

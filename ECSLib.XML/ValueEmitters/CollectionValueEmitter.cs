@@ -2,7 +2,7 @@
 
  namespace ECSLib.XML.ValueEmitters;
 
-internal class CollectionValueEmitter  : IValueEmitter
+internal class CollectionValueEmitter : IMergeableValueEmitter
 {
     private readonly List<IValueEmitter> _items;
 
@@ -46,5 +46,11 @@ internal class CollectionValueEmitter  : IValueEmitter
     {
         if (type.IsArray) EmitAsArray(il, type.GetElementType()!);
         else EmitAsICollection(il, type, type.GetGenericArguments()[0]);
+    }
+
+    public void MergeWith(IValueEmitter other)
+    {
+        if (other is not CollectionValueEmitter otherCol) return;
+        _items.AddRange(otherCol._items);
     }
 }
