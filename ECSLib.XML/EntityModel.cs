@@ -7,6 +7,7 @@ internal class EntityModel
 {
     private const string ParentAttributeName = "Parent";
     private const string ParentAttributeSeparator = ";;";
+    private const string InheritAttributeName = "Inherit";
 
     private readonly XmlNode _node;
     public string Name => _node.Name;
@@ -69,6 +70,12 @@ internal class EntityModel
         foreach (XmlNode componentNode in _node.ChildNodes)
         {
             if (componentNode.NodeType != XmlNodeType.Element) continue;
+
+            var compInheritAttribute = componentNode.Attributes?[InheritAttributeName];
+            if (compInheritAttribute != null 
+                && bool.TryParse(compInheritAttribute.Value, out var compInherit) 
+                && !compInherit)
+                Components.Remove(componentNode.Name);
 
             foreach (XmlNode fieldNode in componentNode.ChildNodes)
             {

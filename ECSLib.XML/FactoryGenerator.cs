@@ -74,7 +74,6 @@ internal static class FactoryGenerator
             compEmitter.Emit(generator, componentType);
             generator.Emit(OpCodes.Pop);
          
-            //TODO adding one comp per comp is not very efficient
             //ecs.AddComponent(entity, component);
             var setComponentMethodInfo = SetComponentGenericMethodInfo.MakeGenericMethod(componentType);
             generator.Emit(OpCodes.Ldarg_0);
