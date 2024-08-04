@@ -5,7 +5,7 @@ using ECSLib.XML.Extensions;
 
 namespace ECSLib.XML.ValueEmitters;
 
-internal class MultipleChildrenEmitter : IValueEmitter
+internal class MultipleChildrenEmitter : IMergeableValueEmitter
 {
     private readonly List<XmlElement> _children;
     private const string ListItemNodeName = "li";
@@ -62,4 +62,12 @@ internal class MultipleChildrenEmitter : IValueEmitter
     }
 
     public void Emit(ILGenerator il, Type type) => GetInnerEmitterFor(type).Emit(il, type);
+    
+    public void MergeWith(IValueEmitter other)
+    {
+        if (other is not MultipleChildrenEmitter otherMultiple) return;
+        _children.AddRange(otherMultiple._children);
+    }
+    
+    public IValueEmitter Copy() => new MultipleChildrenEmitter([.._children]);
 }

@@ -5,4 +5,5 @@ namespace ECSLib.XML.ValueEmitters;
 internal interface IValueEmitter
 {
     void Emit(ILGenerator il, Type type);
+    IValueEmitter Copy();
 }

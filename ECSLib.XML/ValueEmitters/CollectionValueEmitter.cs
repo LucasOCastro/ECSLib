@@ -53,4 +53,6 @@ internal class CollectionValueEmitter : IMergeableValueEmitter
         if (other is not CollectionValueEmitter otherCol) return;
         _items.AddRange(otherCol._items);
     }
+    
+    public IValueEmitter Copy() => new CollectionValueEmitter([.._items]);
 }

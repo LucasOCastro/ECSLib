@@ -30,4 +30,6 @@ internal class EmptyValueEmitter : IValueEmitter
 
         throw new NotSupportedException($"{type.FullName} is not a supported type for empty XML tags.");
     }
+
+    public IValueEmitter Copy() => new EmptyValueEmitter();
 }

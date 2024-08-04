@@ -36,4 +36,6 @@ internal class DictionaryValueEmitter : IMergeableValueEmitter
         if (other is not DictionaryValueEmitter otherDict) return;
         _items.AddRange(otherDict._items);
     }
+    
+    public IValueEmitter Copy() => new DictionaryValueEmitter([.._items]);
 }

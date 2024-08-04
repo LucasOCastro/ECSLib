@@ -57,4 +57,6 @@ internal class StructValueEmitter : IValueEmitter
         //Copy the struct onto the stack to return
         generator.Emit(OpCodes.Ldloc, ComponentLocal);
     }
+    
+    public IValueEmitter Copy() => new StructValueEmitter(new(_fields));
 }

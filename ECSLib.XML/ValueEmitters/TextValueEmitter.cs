@@ -17,4 +17,6 @@ internal class TextValueEmitter : IValueEmitter
         var value = Convert.ChangeType(_text, type, CultureInfo.InvariantCulture);
         il.EmitLoadConstant(value);
     }
+    
+    public IValueEmitter Copy() => new TextValueEmitter(_text);
 }
