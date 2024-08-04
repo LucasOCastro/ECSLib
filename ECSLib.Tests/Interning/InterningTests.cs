@@ -1,4 +1,6 @@
-﻿namespace ECSLib.Tests.Interning;
+﻿using ECSLib.Components.Interning;
+
+namespace ECSLib.Tests.Interning;
 
 public class InterningTests
 {
@@ -14,10 +16,15 @@ public class InterningTests
     public void TestInterningUniqueness()
     {
         var a = _world.CreateEntity();
+        RefPoolContext.BeginContext(a, _world);
         _world.AddComponent<CompA>(a);
+        RefPoolContext.EndContext(a, _world);
 
         var b = _world.CreateEntity();
+        RefPoolContext.BeginContext(b, _world);
         _world.AddComponent<CompB>(b);
+        RefPoolContext.EndContext(b, _world);
+        
         Assert.Multiple(() =>
         {
             Assert.That(_world.GetComponent<CompB>(b).Text.Value, Is.EqualTo("B"));
@@ -36,7 +43,9 @@ public class InterningTests
     public void TestComplexInterning()
     {
         var a = _world.CreateEntity();
+        RefPoolContext.BeginContext(a, _world);
         _world.AddComponent<CompComplex>(a);
+        RefPoolContext.EndContext(a, _world);
         
         Assert.Multiple(() =>
         {
