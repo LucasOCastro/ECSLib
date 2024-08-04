@@ -8,6 +8,7 @@ internal class EntityModel
     private const string ParentAttributeName = "Parent";
     private const string ParentAttributeSeparator = ";;";
     private const string InheritAttributeName = "Inherit";
+    private const string IgnoreAttributeName = "Ignore";
 
     private readonly XmlNode _node;
     public string Name => _node.Name;
@@ -53,7 +54,7 @@ internal class EntityModel
     {
         foreach (var (type, fromFields) in components)
         foreach (var (field, value) in fromFields)
-            SetField(type, field, value);
+            SetField(type, field, value.Copy());
     }
     
     /// <summary>
@@ -70,6 +71,13 @@ internal class EntityModel
         {
             if (componentNode.NodeType != XmlNodeType.Element) continue;
 
+            if (bool.TryParse(componentNode.Attributes?[IgnoreAttributeName]?.Value, out var compIgnore)
+                && compIgnore)
+            {
+                Components.Remove(componentNode.Name);
+                continue;
+            }
+            
             if (bool.TryParse(componentNode.Attributes?[InheritAttributeName]?.Value, out var compInherit) 
                 && !compInherit)
                 Components.Remove(componentNode.Name);
