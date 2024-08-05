@@ -8,9 +8,11 @@ To instantiate an ECS World, use the `ECS` class. Use it to create, access, modi
 ECS world = new();
 ```
 
+The ECS object manages entities, archetypes and components internally. Systems, however, must be registed manually (or via reflection, as explained in [LINK]) and executed by calling `ECS.ProcessSystems` (if necessary, _deltaTime_ and other such values must be stored in an external state). The execution of these systems can be customized by using Pipelines [LINK].
+
 ## Components
 A component is a simple struct. Every field should be of a blittable type as components are stored within archetypes as byte arrays.
-This means that reference types and strings are only allowed when wrapped with a PooledRef<T> struct, further described in [LINK].
+This means that reference types and strings are only allowed when wrapped with the `ECSLib.Components.Interning.PooledRef<T>` struct, further described in [LINK].
 
 To strictly follow ECS principles, a component struct should only have public fields and a default constructor.
 Because that isn't very flexible, properties which interface with fields are generally acceptable,
@@ -26,7 +28,7 @@ struct MoverComponent
 ```
 
 ## Entities
-Entities are represented by the record struct `Entity`, formed by an unique ID and Generation int pair. The Generation field is required because IDs are recycled after an entity is destroyed.
+Entities are represented by the record struct `ECSLib.Entities.Entity`, formed by an unique ID and Generation int pair. The Generation field is required because IDs are recycled after an entity is destroyed.
 
 An entity can only have a single component of each type, trying to add duplicated components will throw an exception, as will trying to remove a component which is not present.
 The `AddComponent` method receives an optional default value.
@@ -48,3 +50,24 @@ The entire component can also be overwritten:
 ```cs
 world.GetComponent<MoverComponent>(entity) = new(){Speed = 0, CanJump = false};
 ```
+
+## Queries
+Construct a `ECSLib.Query` struct to filter and iterate through entities.
+```cs
+Query query = Query
+              .With<RequiredComponent1, RequiredComponent2...>().
+              .WithAny<OptionalComponent1, OptionalComponent2...>().
+              .WithNone<UnwantedComponent1, UnwantedComponent2...>();
+```
+
+Apply the query and execute a QueryAction delegate via the ECS world object. The Comp struct is used to support optional components.
+ECS.Query methods with an appropriate number of components in its action are provided dynamically via the ECSLib.SourceGen package.
+```cs
+world.Query(query, (Entity e, ref Comp<RequiredComponent1> c1, ref Comp<OptionalComponent1> o1) => {
+    c1.Value.FieldInComponent++;
+    if (o1.HasValue)
+        o1.Value.FieldInOptional++;
+});
+```
+
+**Attention:** Instead of using the `ECS.Query` method directly, consider using a system class as explained in [LINK].
