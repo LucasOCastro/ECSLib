@@ -8,11 +8,11 @@ To instantiate an ECS World, use the `ECS` class. Use it to create, access, modi
 ECS world = new();
 ```
 
-The ECS object manages entities, archetypes and components internally. Systems, however, must be registed manually (or via reflection, as explained in [LINK]) and executed by calling `ECS.ProcessSystems` (if necessary, _deltaTime_ and other such values must be stored in an external state). The execution of these systems can be customized by using Pipelines [LINK].
+The ECS object manages entities, archetypes and components internally. Systems, however, must be registed manually or via refleciton and executed by calling `ECS.ProcessSystems` (if necessary, _deltaTime_ and other such values must be stored in an external state). The execution of these systems can be customized by using [Pipelines](#pipelines).
 
 ## Components
 A component is a simple struct. Every field should be of a blittable type as components are stored within archetypes as byte arrays.
-This means that reference types and strings are only allowed when wrapped with the `ECSLib.Components.Interning.PooledRef<T>` struct, further described in [LINK].
+This means that reference types and strings are only allowed when wrapped with the `ECSLib.Components.Interning.PooledRef<T>` struct, further described in [Reference Interning](#reference-interning).
 
 To strictly follow ECS principles, a component struct should only have public fields and a default constructor.
 Because that isn't very flexible, properties which interface with fields are generally acceptable,
@@ -51,8 +51,20 @@ The entire component can also be overwritten:
 world.GetComponent<MoverComponent>(entity) = new(){Speed = 0, CanJump = false};
 ```
 
+Entities are stored within archetypes, and whenever a component is added or removed from an entity, it is copied to the storage of the next archetype. 
+To avoid moving repeatedly moving an entity from archetype to archetype when initializing it, you can insert an entity directly into an archetype.
+In this scenario, you **MUST** initialize the values in the components MANUALLY.
+```cs
+Entity entity = world.CreateEntityWithComponents([typeof(Comp1), typeof(Comp2)]);
+world.GetComponent<Comp1>(entity) = new();
+world.GetComponent<Comp2>(entity) = new();
+```
+
 ## Queries
-Construct a `ECSLib.Query` struct to filter and iterate through entities.
+Construct a `ECSLib.Query` struct to filter and iterate through entities. 
+Components passed into `With` are all required, queries with 0 required components are not supported.
+Components passed into `WithAny` follow an OR pattern, so only entities with at least one of the components will be processd.
+Components passed into `WithNone` are blacklisted, so entities with these components will be ignored.
 ```cs
 Query query = Query
               .With<RequiredComponent1, RequiredComponent2...>().
@@ -70,4 +82,215 @@ world.Query(query, (Entity e, ref Comp<RequiredComponent1> c1, ref Comp<Optional
 });
 ```
 
-**Attention:** Instead of using the `ECS.Query` method directly, consider using a system class as explained in [LINK].
+## Systems
+A system class inherits from the abstract `ECSLib.Systems.BaseSystem` class. Systems are prefereably stateless. Systems can be registered manually or via reflection ruled by attributes.
+It can be processed directly by invoking the `Process` method and passing in the ECS world, or processed by the world automatically when `ECS.ProcessSystems` is called, following Pipeline rules. 
+The ECS world can hold only one system of a certain type.
+
+### Basic System
+A basic system overrides the `Process` method and implements its own logic to execute. 
+Annotating the system class with `ECSLib.Systems.Attributes.ECSSystemClassAttribute` is optional, 
+but required if you want systems to be registered automatically via reflection when the ECS world is constructed.
+```cs
+public class MySystem : BaseSystem
+{
+  public override void Process(ECS world)
+  {
+    world.Query(Query.With<MyComponent>(), (Entity e, ref Comp<MyComponent> comp) => DoSomething(comp.X));
+  }
+}
+```
+
+### System Method
+If a system class is annotated with `ECSLib.Systems.Attributes.ECSSystemClassAttribute`, its methods can be annotated with `ECSLib.Systems.Attributes.ECSSystemAttribute`
+and source generation will automatically override the Process method to execute the system method, generating a Query and adapting the parameters adequately into a QueryAction.
+
+The method can be private, public, static or instance, but should generally be static.
+
+The first `Entity` parameter is optional.
+
+A parameter prefixed by `ref` is read-write, a parameter prefixed by `in` is read-only.
+
+A parameter annotated with `ECSLib.Systems.Attributes.OptionalAttribute` and wrapped with `Comp<T>` is optional.
+
+The parameters annotated with `ECSLib.Systems.Attributes.AnyAttribute` and wrapped with `Comp<T>` will be included in the OR pattern, so at least one will be required during the query execution.
+
+Any query information not written in the parameters (required components which won't be used, blacklisted components, etc) can be provided in the parameters of the `ECSSystemAttribute` attribute.
+```cs
+[ECSSystemClass]
+public class MySystem : BaseSystem
+{
+  [ECSSystemAttribute(All=[typeof(RequiredComponentThatWontBeUsed)], None=[typeof(BlacklistedComponent)])]
+  private static void MyFirstSystem(Entity entity,
+                                    ref MyRequiredComp requiredComp,
+                                    in MyReadOnlyComp readonlyComp,
+                                    [Optional]ref Comp<MyOptionalComp> optionalComp,
+                                    [Any]ref Comp<MyAnyComp1> anyComp1,
+                                    [Any]ref Comp<MyAnyComp2> anyComp2)
+    {
+    }
+}
+```
+
+### Pipelines
+Define a Pipeline enum with `ECSLib.Systems.Attributes.PipelineEnumAttribute`.
+Register this type by passing it to the ECS world constructor or via automatic reflection search.
+Associate a system with a pipeline by providing the pipeline value in the `ECSSystemClass` attribute.
+`ECS.ProcessSystems` will be executed sequentially given the numerical values of the Pipeline enum.
+Systems associated with pipeline items annotated with `ECSLib.Systems.Attributes.DoNotProcessAttribute` will be ignored in `ECS.ProcessSystems`.
+
+```cs
+[PipelineEnum]
+public enum MyPipeline
+{
+    Input = 1,
+    Physics = 2,
+    [DoNotProcess] Render = 3
+}
+
+[ECSSystemClass(Pipeline=(int)MyPipeline.Render)]
+public class MyExampleSystem{}
+
+private ECS _world;
+public void MyGameInit(){
+    _world = new(pipelineEnumType: typeof(MyPipeline));
+}
+
+public void MyGameUpdate(){
+    //Processes the Input and Physics pipelines.
+    _world.ProcessSystems();
+}
+
+public void MyGameRender(){
+    //Processes only the render pipeline
+    _world.ProcessSystems((int)MyPipeline.Render);
+}
+```
+
+## Reference Interning
+Components can't store references and collections, including strings. This is circumvented by interning references: Allocate the reference type in an external pool and store a local ID which maps into the pool.
+This is achieved in ECSLib by using `PooledRef<T>` and `RefPool<T>`.
+
+```cs
+public struct MyCompWithRefs
+{
+    public PooledRef<string> MyString = new("Default values are supported!");
+    public PooledRef<List<int>> MyList = new([1, 2, 3]);
+}
+```
+
+**ATTENTION:** When an entity is destroyed, its PooledRefs must be released from the pool. 
+To accomplish this, before registering any PooledRef, you must first set the global context in `ECSLib.Components.Interning.RefPoolContext`.
+```cs
+Entity e = world.CreateEntity();
+RefPoolContext.BeginContext(e, world);
+world.AddComponent<MyCompWithRefs>(e);
+RefPoolContext.EndContext(e, world);
+```
+
+# XML Deserialization
+Entity archetypes can be defined in XML, including initial values for fields, using the ECSLib.XML package.
+XML definitions are deserialized into EntityFactory delegates, which can be accessed in the `ECSLib.XML.EntityFactoryRegistry` class.
+The delgates are generated using DynamicMethods.
+
+## XML Structure
+Give the components in C#:
+```cs
+namespace Namespace.Qualified;
+
+public struct MyComponent
+{
+    public int IntField = 3;
+    public PooledRef<List<int>> MyList = new([1, 2, 3]);
+    public PooledRef<Dictionary<string, bool>> MyDict = new([]);
+    public bool MyBoolean;
+    public MyComponent() {}
+}
+
+public struct MyFlagComponent
+{
+}
+```
+
+An entity can be constructed as following. The Entity name should be **UNIQUE** amongst all other entity definitons. 
+```xml
+<Defs>
+    <MyEntityName>
+        <Namespace.Qualified.ComponentName>
+            <IntField>1</IntField>
+            <MyList>
+                <li>4></li>
+                <li>5</li>
+            </MyList>
+            <MyDict>
+                <li>
+                    <key>KeyOne</key>
+                    <value>true</value>
+                </li>
+            </MyDict>
+            <MyBool/>
+        </Namespace.Qualified.ComponentName>
+        <Namespace.Qualified.MyFlagComponent/>
+    </MyEntityName>
+</Defs>
+```
+
+Fields not written in the XML will have their values set to the default stablished in C#.
+
+Collections have their items enumerated with <li> tags.
+
+Dictionaries have <li> items, each with a <key> and <value> pair.
+
+Boolean fields written as an empty open/close tag (`<MyBool/>`) will be parsed as true.
+
+Components written as an empty open/close tag (`<Namespace.Qualified.MyFlagComponent/>`) will be added without changing values.
+
+## Inheritance
+Definitions can have inheritance using the `Parent` XML attribute. Multiple inheritance is allowed, each parent separated with `;;`.
+The rightmost parent takes precedence. Diamond inheritance is allowed. Inheritance loops will yield exceptions.
+
+In the example, Child will have the components CompA, CompB, CompC, CompD, and CompA will have Value=3 due to inheriting it from the rightmost parent Mother.
+```XML
+<Defs>
+    <Father>
+      <CompA>
+        <Value>2</Value>
+      <CompA/>
+      <CompB/>
+    </Father>
+    <Grandma>
+      <CompA>
+        <Value>3</Value>
+      <CompA/>
+      <CompC/>
+    </Grandma>
+    <Child Parent="Fater;;Mother">
+      <CompD/>
+    </Child>
+</Defs>
+```
+
+All fields from parents will be inherited, unless the XML attribute `Inherit="false"` is set in a component.
+In that case, instead of inheriting the value from the parent definition, the value will come directly from the C# constructor.
+
+A Collection or Dictionary field with the XML attribute `Inherit="true"` will add the values to the parent's values instead of replacing the entire collection.
+
+You can use the XML attribute `Ignore="true"` to remove components taht were inherited from a parent definition.
+
+## Entity Factory Registry
+To deserialize the xml into factories, load the xml files as `XmlDocument`s, load them into `EntityFactoryRegistry` using `LoadXml`, then convert all xmls into factory delegates using `RegisterAllFactories`.
+```cs
+XmlDocument doc = new();
+doc.Load("file path");
+
+EntityFactoryRegistry factories = new();
+factories.LoadXml(doc);
+
+var assembly = Assembly.GetExecutingAssembly();
+factories.RegisterAllFactories(assembly);
+```
+
+You can get the factory itself or instantiate an entity directly from its unique name defined in XML:
+```cs
+Entity villager = factories.CreateEntity("Villager", world);
+```
