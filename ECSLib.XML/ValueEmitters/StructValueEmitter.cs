@@ -49,6 +49,9 @@ internal class StructValueEmitter : IValueEmitter
                     generator.Emit(OpCodes.Stfld, field);
                     break;
                 case PropertyInfo prop:
+                    if (prop.SetMethod == null)
+                        throw new MissingMethodException(
+                            $"{valueType.Name} has deserialized prop {prop.Name} with no setter.");
                     generator.Emit(OpCodes.Call, prop.SetMethod);
                     break;
             }
