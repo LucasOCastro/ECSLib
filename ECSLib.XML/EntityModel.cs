@@ -44,17 +44,14 @@ internal class EntityModel
         return fields;
     }
 
-    private void SetField(string componentType, string field, IValueEmitter emitter)
-    {
-        var fields = GetComponent(componentType);
-        fields[field] = emitter;
-    }
-
     private void CopyComponentsFrom(Dictionary<string, Dictionary<string, IValueEmitter>> components)
     {
         foreach (var (type, fromFields) in components)
-        foreach (var (field, value) in fromFields)
-            SetField(type, field, value.Copy());
+        {
+            var comp = GetComponent(type);
+            foreach (var (field, value) in fromFields)
+                comp[field] = value.Copy();
+        }
     }
     
     /// <summary>
@@ -82,6 +79,7 @@ internal class EntityModel
                 && !compInherit)
                 Components.Remove(componentNode.Name);
 
+            var comp = GetComponent(componentNode.Name);
             foreach (XmlNode fieldNode in componentNode.ChildNodes)
             {
                 if (fieldNode.NodeType != XmlNodeType.Element) continue;
@@ -97,8 +95,8 @@ internal class EntityModel
                     mergeable.MergeWith(emitter);
                     continue;
                 }
-                
-                SetField(componentNode.Name, fieldNode.Name, emitter);
+
+                comp[fieldNode.Name] = emitter;
             }
         }
     }
