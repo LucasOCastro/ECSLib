@@ -1,6 +1,6 @@
-﻿using System.Globalization;
-using System.Reflection.Emit;
+﻿using System.Reflection.Emit;
 using ECSLib.XML.Extensions;
+using ECSLib.XML.Parsing;
 
 namespace ECSLib.XML.ValueEmitters;
 
@@ -14,8 +14,7 @@ internal class TextValueEmitter : IValueEmitter
 
     public void Emit(ILGenerator il, Type type)
     {
-        var value = Convert.ChangeType(_text, type, CultureInfo.InvariantCulture);
-        il.EmitLoadConstant(value);
+        il.EmitLoadConstant(StringParserManager.Parse(_text, type));
     }
     
     public IValueEmitter Copy() => new TextValueEmitter(_text);
