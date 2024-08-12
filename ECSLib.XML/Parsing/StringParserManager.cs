@@ -1,20 +1,16 @@
-﻿using System.Globalization;
-
+﻿
 namespace ECSLib.XML.Parsing;
 
 public static class StringParserManager
 {
-    private static readonly Dictionary<Type, IStringParser> Parsers = [];
-
-    public static void AddParser(Type type, IStringParser parser) => Parsers[type] = parser;
-    
-    public static object? Parse(string str, Type type)
+    private static readonly Dictionary<Type, IConstructorParser> Parsers = new()
     {
-        var parser = TryGetParserForType(type);
-        return parser != null ? parser.Parse(str) : Convert.ChangeType(str, type, CultureInfo.InvariantCulture);
-    }
+        [typeof(Nullable<>)] = new NullableStringParser()
+    }; 
     
-    private static IStringParser? TryGetParserForType(Type? type)
+    public static void AddParser(Type type, IConstructorParser parser) => Parsers[type] = parser;
+    
+    public static IConstructorParser? TryGetConstructorParserForType(Type? type)
     {
         while (type != null)
         {

@@ -1,6 +1,8 @@
-﻿namespace ECSLib.XML.Parsing;
+﻿using System.Reflection;
 
-public interface IStringParser
+namespace ECSLib.XML.Parsing;
+
+public interface IConstructorParser
 {
-    object? Parse(string str);
+    (ConstructorInfo constructor, string[] args, (string name, string value)[] fields) Parse(string str, Type type);
 }

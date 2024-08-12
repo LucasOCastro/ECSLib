@@ -70,9 +70,9 @@ internal static class FactoryGenerator
         foreach (var (componentType, fields) in components)
         {
             //Constructs and stores the component instance
-            StructValueEmitter compEmitter = new(fields);
+            StructValueEmitter compEmitter = new(null, [], fields);
             compEmitter.Emit(generator, componentType);
-            generator.Emit(OpCodes.Pop);
+            generator.Emit(OpCodes.Pop); 
          
             //ecs.AddComponent(entity, component);
             var setComponentMethodInfo = SetComponentGenericMethodInfo.MakeGenericMethod(componentType);

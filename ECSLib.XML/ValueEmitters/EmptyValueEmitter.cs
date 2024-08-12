@@ -23,7 +23,7 @@ internal class EmptyValueEmitter : IValueEmitter
 
         if (!type.IsByRef)
         {
-            StructValueEmitter structEmitter = new([]);
+            StructValueEmitter structEmitter = new(null, [], []);
             structEmitter.Emit(il, type);
             return;
         }

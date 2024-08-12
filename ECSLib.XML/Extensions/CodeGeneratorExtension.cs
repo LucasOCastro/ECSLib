@@ -1,4 +1,5 @@
-﻿using System.Reflection.Emit;
+﻿using System.Reflection;
+using System.Reflection.Emit;
 
 namespace ECSLib.XML.Extensions;
 
@@ -8,11 +9,21 @@ internal static class CodeGeneratorExtension
     {
         var local = il.DeclareLocal(structType);
         var constructor = structType.GetConstructor(Type.EmptyTypes);
+        il.Emit(OpCodes.Ldloca_S, local);
         if (constructor != null)
-        {
-            il.Emit(OpCodes.Ldloca_S, local);
             il.Emit(OpCodes.Call, constructor);
-        }
+        else 
+            il.Emit(OpCodes.Initobj);
+        return local;
+    }
+
+    public static LocalBuilder EmitStructConstructor(this ILGenerator il, Type structType,
+        ConstructorInfo constructor, Action<ILGenerator> emitArgs)
+    {
+        var local = il.DeclareLocal(structType);
+        il.Emit(OpCodes.Ldloca_S, local);
+        emitArgs(il);
+        il.Emit(OpCodes.Call, constructor);
         return local;
     }
     

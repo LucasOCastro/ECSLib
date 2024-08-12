@@ -49,7 +49,8 @@ internal class MultipleChildrenEmitter : IMergeableValueEmitter
     
     private StructValueEmitter GetStructEmitter()
     {
-        return new(_children.ToDictionary(child => child.Name, ValueEmitterUtility.GetEmitterForNode));
+        var fields = _children.ToDictionary(child => child.Name, ValueEmitterUtility.GetEmitterForNode);
+        return new(null, [], fields);
     }
     
     private IValueEmitter GetInnerEmitterFor(Type type)

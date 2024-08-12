@@ -8,18 +8,38 @@ namespace ECSLib.XML.ValueEmitters;
 
 internal class StructValueEmitter : IValueEmitter
 {
+    public LocalBuilder? ComponentLocal { get; private set; }
+    
+    private readonly ConstructorInfo? _constructor;
+    
+    private readonly List<IValueEmitter> _constructorArgs;
+    
     private readonly Dictionary<string, IValueEmitter> _fields;
-    public StructValueEmitter(Dictionary<string, IValueEmitter> fields)
+    
+    public StructValueEmitter(ConstructorInfo? constructor, List<IValueEmitter> constructorArgs,
+        Dictionary<string, IValueEmitter> fields)
     {
+        _constructor = constructor;
+        _constructorArgs = constructorArgs;
         _fields = fields;
     }
 
-    public LocalBuilder? ComponentLocal { get; private set; }
+    private void EmitConstructorArgs(ILGenerator generator)
+    {
+        if (_constructor == null || _constructor.GetParameters().Length != _constructorArgs.Count)
+            return;
+        
+        var parameters = _constructor.GetParameters();
+        for (int i = 0; i < parameters.Length; i++)
+            _constructorArgs[i].Emit(generator, parameters[i].ParameterType);
+    }
     
     public void Emit(ILGenerator generator, Type type)
     {
-        ComponentLocal = generator.EmitStructConstructor(type);
-        foreach (var (fieldName, fieldValueEmitter) in _fields)
+        ComponentLocal = _constructor == null
+            ? generator.EmitStructConstructor(type)
+            : generator.EmitStructConstructor(type, _constructor, EmitConstructorArgs);
+        foreach (var (fieldName, fieldValueEmitter) in  _fields)
         {
             var member = type.GetFieldOrProperty(fieldName, BindingFlags.Instance | BindingFlags.Public);
             if (member == null) throw new MissingMemberException(type.Name, fieldName);
@@ -31,7 +51,7 @@ internal class StructValueEmitter : IValueEmitter
             //If the field is an interned ref, load the interning struct address onto the stack
             if (valueType.IsConstructedGenericType && valueType.GetGenericTypeDefinition() == typeof(PooledRef<>))
             {
-                var valueProp = valueType.GetProperty(nameof(PooledRef<object>.Value), BindingFlags.Instance | BindingFlags.Public)!;
+                var valueProp = valueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)!;
                 if (member is FieldInfo f) generator.Emit(OpCodes.Ldflda, f);
                 else throw new InternedRefIsPropertyException(member);
                     
@@ -41,8 +61,7 @@ internal class StructValueEmitter : IValueEmitter
                 
             //Load the actual value into the stack
             fieldValueEmitter.Emit(generator, valueType);
-                
-                
+
             switch (member)
             {
                 case FieldInfo field:
@@ -61,5 +80,5 @@ internal class StructValueEmitter : IValueEmitter
         generator.Emit(OpCodes.Ldloc, ComponentLocal);
     }
     
-    public IValueEmitter Copy() => new StructValueEmitter(new(_fields));
+    public IValueEmitter Copy() => new StructValueEmitter(_constructor, [.._constructorArgs], new(_fields));
 }
