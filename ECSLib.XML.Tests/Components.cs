@@ -16,6 +16,7 @@ public struct HealthComponent
 {
     public int Health = 5;
     public int DeathSound = -1;
+    public int? NullableMode;
     public PooledRef<string> DeathSpeech = new("Silent");
 
     public HealthComponent()

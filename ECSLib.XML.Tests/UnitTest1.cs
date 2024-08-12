@@ -22,6 +22,7 @@ public class Tests
     private const float TestSpeed = 4.5f;
     private const bool TestCanRun = true;
     private const float TestSpeedMerchant = 2.0f;
+    private const int TestNullableModeMerchant = 14;
 
     // ReSharper disable once HeuristicUnreachableCode
     private static readonly string Xml = $"""
@@ -41,6 +42,7 @@ public class Tests
                                             <Merchant Parent="Villager">
                                                 <ECSLib.XML.Tests.HealthComponent>
                                                     <DeathSpeech>Argh! My farms!</DeathSpeech>
+                                                    <NullableMode>{TestNullableModeMerchant}</NullableMode>
                                                 </ECSLib.XML.Tests.HealthComponent>
                                                 <ECSLib.XML.Tests.MoverComponent>
                                                   <Speed>{TestSpeedMerchant.ToString(CultureInfo.InvariantCulture)}</Speed>
@@ -60,7 +62,8 @@ public class Tests
         factories.RegisterAllFactories(assembly);
         
         //Assert the entity was created properly
-        factories.CreateEntity("Villager", _world);
+        var villager = factories.CreateEntity("Villager", _world);
+        Assert.That(_world.GetComponent<HealthComponent>(villager).NullableMode, Is.Null);
         var merchant = factories.CreateEntity("Merchant", _world);
         int i = 0;
         _world.Query(Query.With<HealthComponent, MoverComponent>(),
@@ -71,6 +74,7 @@ public class Tests
                 Assert.That(h.Value.DeathSound, Is.EqualTo(TestDeathSound));
                 Assert.That(m.Value.Speed, Is.EqualTo(e == merchant ? TestSpeedMerchant : TestSpeed));
                 Assert.That(m.Value.CanRun, Is.EqualTo(TestCanRun));
+                Assert.That(h.Value.NullableMode, Is.EqualTo(e == merchant ? TestNullableModeMerchant : null));
             });
         Assert.That(i, Is.EqualTo(2));
         
