@@ -3,6 +3,7 @@ using System.Reflection.Emit;
 using ECSLib.Components.Interning;
 using ECSLib.XML.Exceptions;
 using ECSLib.XML.Extensions;
+using ECSLib.XML.Parsing;
 
 namespace ECSLib.XML.ValueEmitters;
 
@@ -22,6 +23,18 @@ internal class StructValueEmitter : IValueEmitter
         _constructor = constructor;
         _constructorArgs = constructorArgs;
         _fields = fields;
+    }
+
+    public StructValueEmitter(ParsedConstructor parsedConstructor)
+    {
+        _constructor = parsedConstructor.Constructor;
+        _constructorArgs = parsedConstructor.ConstructorArgs
+            .Select(a => (IValueEmitter)new TextValueEmitter(a))
+            .ToList();
+        _fields = parsedConstructor.Fields
+            .ToDictionary(f => f.Key,
+                f => (IValueEmitter)new TextValueEmitter(f.Value)
+            );
     }
 
     private void EmitConstructorArgs(ILGenerator generator)

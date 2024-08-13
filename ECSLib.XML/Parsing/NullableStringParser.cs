@@ -1,19 +1,17 @@
-﻿using System.Reflection;
-
-namespace ECSLib.XML.Parsing;
+﻿namespace ECSLib.XML.Parsing;
 
 public class NullableStringParser : IConstructorParser
 {
-    public (ConstructorInfo constructor, string[] args, (string name, string value)[] fields) Parse(string str, Type type)
+    public ParsedConstructor Parse(string str, Type type)
     {
         if (!type.IsConstructedGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>))
             throw new ArgumentException($"Type should be {typeof(Nullable<>).Name}.", nameof(type));
-        
+
         if (string.IsNullOrWhiteSpace(str) || str.Equals("null", StringComparison.InvariantCultureIgnoreCase))
-            return (type.GetConstructor(Type.EmptyTypes)!, [], []);
+            return new();
 
         var innerType = type.GenericTypeArguments[0];
-        return (type.GetConstructor([innerType])!, [str], []); 
+        return new(type.GetConstructor([innerType])!, [str]); 
     }
     
     /*public object? Parse(string str, Type type)
