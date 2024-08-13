@@ -12,8 +12,8 @@ internal static class CodeGeneratorExtension
         il.Emit(OpCodes.Ldloca_S, local);
         if (constructor != null)
             il.Emit(OpCodes.Call, constructor);
-        else 
-            il.Emit(OpCodes.Initobj);
+        else
+            il.Emit(OpCodes.Initobj, structType);
         return local;
     }
 
