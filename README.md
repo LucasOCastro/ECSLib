@@ -294,3 +294,27 @@ You can get the factory itself or instantiate an entity directly from its unique
 ```cs
 Entity villager = factories.CreateEntity("Villager", world);
 ```
+
+## Custom XML Parsing
+Using the `ECSLib.XML.Parsing` namespace, you can register custom parsers in `StringParserManager` to to deserialize text values into structs. Implement the `IConstructorParser` interface, which parses a string into a `ParsedConstructor`. This struct representes a constructor and its parameters which will later be actually deserialized during Factory generation. 
+
+Here's an example which will parse `(5, 10)` into `new Vector2(5, 10)`.
+
+```cs
+public class Vector2Parser : IConstructorParser
+{
+    // 
+    public ParsedConstructor Parse(string str, Type type)
+    {
+        var split = str.Trim().Trim('(', ')').Split(',');
+        var constructor = type.GetConstructor([typeof(float), typeof(float)]);
+        return new(constructor, split);
+    }
+}
+```
+
+Register the custom parser before usage.
+
+```cs
+StringParserManager.AddParser(typeof(Vector2), new Vector2Parser());
+```
