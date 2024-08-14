@@ -104,4 +104,13 @@ internal class ComponentCollectionSet
             }
         }
     }
+
+    public Dictionary<Type, byte[]> GetAllComponents() => _typeToComponents;
+
+    public void SetData(Type type, byte[] data, int index)
+    {
+        var arr = _typeToComponents[type];
+        for (int i = 0; i < data.Length; i++)
+            arr[index + i] = data[i];
+    }
 }

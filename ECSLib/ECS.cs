@@ -118,6 +118,11 @@ public sealed partial class ECS
         return HasComponent(entity, typeof(TComponent));
     }
 
+    public IReadOnlySet<Type> GetAllComponentTypes(Entity entity)
+    {
+        return _archetypeManager.GetAllComponentTypes(entity);
+    }
+
     #endregion
 
     #region  SYSTEMS
@@ -185,5 +190,15 @@ public sealed partial class ECS
         where T6 : struct
         => _archetypeManager.Query(query, action);
     
+    #endregion
+    
+    #region INTERNAL_COMPONENT_ACCESS
+
+    internal IEnumerable<(Entity entity, Dictionary<Type, byte[]> archetype, int indexInArchetype)> GetAllInfo() =>
+        _archetypeManager.GetAllInfo();
+
+    internal void SetData(Entity entity, Type componentType, byte[] componentData) =>
+        _archetypeManager.SetData(entity, componentType, componentData);
+
     #endregion
 }

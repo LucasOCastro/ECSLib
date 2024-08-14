@@ -239,6 +239,21 @@ internal partial class ArchetypeManager
     public void SetComponent<TComponent>(Entity entity, TComponent value) where TComponent : struct =>
         GetComponent<TComponent>(entity) = value;
 
+    public IEnumerable<(Entity entity, Dictionary<Type, byte[]> archetype, int indexInArchetype)> GetAllInfo()
+    {
+        foreach (var (entity, (archetypeIndex, entityIndexInArchetype)) in _entitiesRecords.All)
+        {
+            yield return (entity, _archetypes[archetypeIndex].Components.GetAllComponents(), entityIndexInArchetype);
+        }
+    }
+
+    public void SetData(Entity entity, Type componentType, byte[] componentData)
+    {
+        var record = _entitiesRecords[entity];
+        _archetypes[record.ArchetypeIndex].Components
+            .SetData(componentType, componentData, record.EntityIndexInArchetype);
+    }
+
     #endregion
     
     #region QUERYING
