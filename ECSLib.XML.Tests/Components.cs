@@ -36,3 +36,5 @@ public struct DialogueComponent
     {
     }
 }
+
+public struct TagComponent;

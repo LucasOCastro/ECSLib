@@ -48,6 +48,9 @@ public class Tests
                                                   <Speed>{TestSpeedMerchant.ToString(CultureInfo.InvariantCulture)}</Speed>
                                                 </ECSLib.XML.Tests.MoverComponent>
                                             </Merchant>
+                                            <WithTag>
+                                                <ECSLib.XML.Tests.TagComponent/>
+                                            </WithTag>
                                           </Defs>
                                           """;
 
@@ -77,6 +80,9 @@ public class Tests
                 Assert.That(h.Value.NullableMode, Is.EqualTo(e == merchant ? TestNullableModeMerchant : null));
             });
         Assert.That(i, Is.EqualTo(2));
+
+        var withTag = factories.CreateEntity("WithTag", _world);
+        Assert.DoesNotThrow(() => _world.GetComponent<TagComponent>(withTag));
         
         //Assert can't register multiple xml with same name
         Assert.Throws<DuplicatedEntityDocumentNameException>(() => factories.LoadXml(doc));
