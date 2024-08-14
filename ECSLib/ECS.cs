@@ -105,6 +105,18 @@ public sealed partial class ECS
     {
         _archetypeManager.SetComponent(entity, value);
     }
+    
+    /// <returns>true if the entity has the given component.</returns>
+    public bool HasComponent(Entity entity, Type componentType)
+    {
+        return _archetypeManager.GetAllComponentTypes(entity).Contains(componentType);
+    }
+
+    /// <inheritdoc cref="HasComponent"/>
+    public bool HasComponent<TComponent>(Entity entity) where TComponent : struct
+    {
+        return HasComponent(entity, typeof(TComponent));
+    }
 
     #endregion
 
