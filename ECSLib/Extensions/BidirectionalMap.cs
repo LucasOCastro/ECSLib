@@ -10,6 +10,12 @@ public class BidirectionalMap<T1, T2>
     private readonly Dictionary<T1, T2> _forward = new();
     private readonly Dictionary<T2, T1> _reverse = new();
 
+    public IEnumerable<T1> A => _forward.Keys;
+    
+    public IEnumerable<T2> B => _reverse.Keys;
+
+    public IEnumerable<(T1, T2)> All => _forward.Select(p => (p.Key, p.Value)); 
+
     public T2 this[T1 key] => _forward[key];
     public T1 this[T2 key] => _reverse[key];
     
