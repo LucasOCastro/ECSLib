@@ -216,7 +216,7 @@ An entity can be constructed as following. The Entity name should be **UNIQUE** 
 ```xml
 <Defs>
     <MyEntityName>
-        <Namespace.Qualified.ComponentName>
+        <Namespace.Qualified.MyComponent>
             <IntField>1</IntField>
             <MyList>
                 <li>4></li>
@@ -228,8 +228,8 @@ An entity can be constructed as following. The Entity name should be **UNIQUE** 
                     <value>true</value>
                 </li>
             </MyDict>
-            <MyBool/>
-        </Namespace.Qualified.ComponentName>
+            <MyBoolean/>
+        </Namespace.Qualified.MyComponent>
         <Namespace.Qualified.MyFlagComponent/>
     </MyEntityName>
 </Defs>
@@ -270,12 +270,12 @@ In the example, Child will have the components CompA, CompB, CompC, CompD, and C
 </Defs>
 ```
 
-All fields from parents will be inherited, unless the XML attribute `Inherit="false"` is set in a component.
-In that case, instead of inheriting the value from the parent definition, the value will come directly from the C# constructor.
+All fields from parents will be inherited, unless the XML attribute `Inherit="false"` is set in a **component**.
+In that case, instead of inheriting the value from the parent definition, the value will come directly fro m the C# constructor.
 
-A Collection or Dictionary field with the XML attribute `Inherit="true"` will add the values to the parent's values instead of replacing the entire collection.
+A Collection or Dictionary **field** with the XML attribute `Inherit="true"` will add the values to the parent's values instead of replacing the entire collection.
 
-You can use the XML attribute `Ignore="true"` to remove components taht were inherited from a parent definition.
+You can use the XML attribute `Ignore="true"` to remove **components** that were inherited from a parent definition.
 
 ## Entity Factory Registry
 To deserialize the xml into factories, load the xml files as `XmlDocument`s, load them into `EntityFactoryRegistry` using `LoadXml`, then convert all xmls into factory delegates using `RegisterAllFactories`.
@@ -303,7 +303,6 @@ Here's an example which will parse `(5, 10)` into `new Vector2(5, 10)`.
 ```cs
 public class Vector2Parser : IConstructorParser
 {
-    // 
     public ParsedConstructor Parse(string str, Type type)
     {
         var split = str.Trim().Trim('(', ')').Split(',');
