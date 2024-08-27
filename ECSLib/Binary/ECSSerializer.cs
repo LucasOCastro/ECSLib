@@ -1,11 +1,10 @@
-﻿using System.Runtime.InteropServices;
-using ECSLib.Components.Interning;
+﻿using ECSLib.Components.Interning;
 
 namespace ECSLib.Binary;
 
-public static class BinarySerializer
+public static class ECSSerializer
 {
-    public static void Write(ECS world, Stream stream)
+    public static void WriteWorldToBytes(ECS world, Stream stream)
     {
         BinaryWriter writer = new(stream);
 
@@ -13,29 +12,37 @@ public static class BinarySerializer
         //Entity count
         writer.Write(info.Count);
         //All Entities
-        foreach (var (entity, archetype, indexInArchetype) in info)
+        foreach (var (entity, components) in info)
         {
-            //Component Count
-            writer.Write(archetype.Count);
-            foreach (var (type, bytes) in archetype)
-            {
-                if (InternedComponentTypesCache.HasInternedField(type))
-                    throw new NotImplementedException();
+            var componentList = components.ToList();
 
+            //Component Count
+            writer.Write(componentList.Count);
+            foreach (var component in componentList)
+            {
+                var type = component.Type;
+                var bytes = component.Bytes.ToArray();
+                
                 var componentName = type.AssemblyQualifiedName;
                 if (componentName == null) throw new NullReferenceException();
                 
+                var serializedBytes = Serializer.ComponentBytesToSerializedBytes(type, bytes);
+                
                 //Component Name
                 writer.Write(componentName);
+                
+                //Component Size
+                writer.Write(serializedBytes.Length);
+                
                 //Component Data
-                writer.Write(bytes);
+                writer.Write(serializedBytes);
             }
         }
         
         writer.Close();
     }
 
-    public static void Read(ECS world, Stream stream)
+    public static void ReadWorldFromBytes(ECS world, Stream stream)
     {
         BinaryReader reader = new(stream); 
         
@@ -55,10 +62,9 @@ public static class BinarySerializer
                 if (componentType == null)
                     throw new($"Missing component type of name {componentName}");
 
-                if (InternedComponentTypesCache.HasInternedField(componentType))
-                    throw new NotImplementedException();
+                //Component Size
+                int componentLength = reader.ReadInt32();
                 
-                int componentLength = Marshal.SizeOf(componentType);
                 //Component Data
                 var componentData = reader.ReadBytes(componentLength);
                 components[j] = new(componentType, componentData);
@@ -66,7 +72,17 @@ public static class BinarySerializer
 
             var entity = world.CreateEntityWithComponents(components.Select(comp => comp.Type));
             foreach (var component in components)
-                world.SetData(entity, component.Type, component.Bytes);
+            {
+                if (RefPoolContext.CurrentContext == null && InternedComponentTypesCache.HasInternedField(component.Type))
+                    RefPoolContext.BeginContext(entity, world);
+
+                var serializedBytes = component.Bytes.ToArray();
+                var componentBytes = Serializer.SerializedBytesToComponentBytes(component.Type, serializedBytes);
+                world.SetData(entity, component.Type, componentBytes);
+            }
+
+            if (RefPoolContext.CurrentContext != null)
+                RefPoolContext.EndContext(entity, world);
         }
         
         reader.Close();
