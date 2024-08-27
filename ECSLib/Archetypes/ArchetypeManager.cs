@@ -238,22 +238,7 @@ internal partial class ArchetypeManager
     /// </summary>
     public void SetComponent<TComponent>(Entity entity, TComponent value) where TComponent : struct =>
         GetComponent<TComponent>(entity) = value;
-
-    public IEnumerable<(Entity entity, Dictionary<Type, byte[]> archetype, int indexInArchetype)> GetAllInfo()
-    {
-        foreach (var (entity, (archetypeIndex, entityIndexInArchetype)) in _entitiesRecords.All)
-        {
-            yield return (entity, _archetypes[archetypeIndex].Components.GetAllComponents(), entityIndexInArchetype);
-        }
-    }
-
-    public void SetData(Entity entity, Type componentType, byte[] componentData)
-    {
-        var record = _entitiesRecords[entity];
-        _archetypes[record.ArchetypeIndex].Components
-            .SetData(componentType, componentData, record.EntityIndexInArchetype);
-    }
-
+    
     #endregion
     
     #region QUERYING
@@ -470,6 +455,33 @@ public void Query<T1, T2, T3, T4, T5, T6>(Query query, QueryAction<T1, T2, T3, T
     }
     _queryResultSet.Clear();
 }
+    
+    #endregion
+    
+    #region INTERNAL_COMPONENT_ACCESS
+    
+    public IEnumerable<(Entity entity, IEnumerable<Binary.BinaryComponent> components)> GetAllInfo()
+    {
+        foreach (var (entity, (archetypeIndex, entityIndexInArchetype)) in _entitiesRecords.All)
+        {
+            var components = _archetypes[archetypeIndex].Definition.Components
+                .Select(compType =>
+                    new Binary.BinaryComponent(
+                        compType,
+                        _archetypes[archetypeIndex].Components.GetComponentSegment(entityIndexInArchetype, compType)
+                    )
+                );
+
+            yield return (entity, components);
+        }
+    }
+
+    public void SetData(Entity entity, Type componentType, byte[] componentData)
+    {
+        var record = _entitiesRecords[entity];
+        _archetypes[record.ArchetypeIndex].Components
+            .SetData(componentType, componentData, record.EntityIndexInArchetype);
+    }
     
     #endregion
 }

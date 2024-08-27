@@ -194,7 +194,7 @@ public sealed partial class ECS
     
     #region INTERNAL_COMPONENT_ACCESS
 
-    internal IEnumerable<(Entity entity, Dictionary<Type, byte[]> archetype, int indexInArchetype)> GetAllInfo() =>
+    internal IEnumerable<(Entity entity, IEnumerable<Binary.BinaryComponent> components)> GetAllInfo() =>
         _archetypeManager.GetAllInfo();
 
     internal void SetData(Entity entity, Type componentType, byte[] componentData) =>
