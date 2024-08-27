@@ -1,7 +1,7 @@
 ﻿using System.Reflection.Emit;
 using System.Xml;
+using ECSLib.Extensions;
 using ECSLib.XML.Exceptions;
-using ECSLib.XML.Extensions;
 
 namespace ECSLib.XML.ValueEmitters;
 

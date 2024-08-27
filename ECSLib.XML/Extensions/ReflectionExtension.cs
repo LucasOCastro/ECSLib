@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Reflection;
+using ECSLib.Extensions;
 
 namespace ECSLib.XML.Extensions;
 
@@ -20,27 +21,5 @@ internal static class ReflectionExtension
             _ => throw new ArgumentException("Member is neither field or property.")
         };
 
-    public static bool IsCollection(this Type type)
-    {
-        var args = type.GetGenericArguments();
-        if (args.Length == 1 && typeof(ICollection<>).MakeGenericType(args).IsAssignableFrom(type))
-            return true;
-        return type.BaseType != null && type.BaseType.IsCollection();
-    }
-
-    /// <summary>
-    /// For example, 
-    /// </summary>
-    /// <param name="type"></param>
-    /// <param name="genericType"></param>
-    /// <returns></returns>
-    /// <example>
-    /// Dictionary&lt;int, string&gt; inherits from IDictionary&lt;,&gt;<br/>
-    /// List&lt;int&gt; inherits from IList&lt;&gt; and ICollection&lt;&gt;
-    /// </example>
-    public static bool ImplementsGenericInterface(this Type type, Type genericType)
-    {
-        return type.GetInterfaces().Any(i => i.IsConstructedGenericType && i.GetGenericTypeDefinition() == genericType);
-    }
-    
+    public static bool IsCollection(this Type type) => type.ImplementsGenericInterface(typeof(ICollection<>));
 }
