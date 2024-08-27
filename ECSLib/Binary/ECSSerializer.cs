@@ -4,10 +4,8 @@ namespace ECSLib.Binary;
 
 public static class ECSSerializer
 {
-    public static void WriteWorldToBytes(ECS world, Stream stream)
+    public static void WriteWorldToBytes(ECS world, BinaryWriter writer)
     {
-        BinaryWriter writer = new(stream);
-
         var info = world.GetAllInfo().ToList();
         //Entity count
         writer.Write(info.Count);
@@ -38,14 +36,10 @@ public static class ECSSerializer
                 writer.Write(serializedBytes);
             }
         }
-        
-        writer.Close();
     }
 
-    public static void ReadWorldFromBytes(ECS world, Stream stream)
+    public static void ReadWorldFromBytes(ECS world, BinaryReader reader)
     {
-        BinaryReader reader = new(stream); 
-        
         //Entity count
         int entityCount = reader.ReadInt32();
         //All Entities
@@ -84,7 +78,5 @@ public static class ECSSerializer
             if (RefPoolContext.CurrentContext != null)
                 RefPoolContext.EndContext(entity, world);
         }
-        
-        reader.Close();
     }
 }
