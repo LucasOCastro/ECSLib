@@ -22,13 +22,20 @@ internal static class Serializer
     
     public static byte[] ComponentBytesToSerializedBytes(Type type, byte[] componentBytes)
     {
-        //TODO consider when fields are reordered - serialize by field name
-        //TODO then consider when fields are renamed - serialize by old names too
         var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        List<byte> result = [];
+        
+        //Write field count
+        List<byte> result = [..BitConverter.GetBytes(fields.Length)];
         int index = 0;
         foreach (var field in fields)
         {
+            //TODO then consider when fields are renamed - serialize by old names too
+            //Write field name length and name
+            var nameBytes = JsonSerializer.SerializeToUtf8Bytes(field.Name);
+            var nameLengthBytes = BitConverter.GetBytes(nameBytes.Length);
+            result.AddRange(nameLengthBytes);
+            result.AddRange(nameBytes);
+            
             Type fieldType = field.FieldType;
             if (!fieldType.GenericDefinitionEquals(typeof(PooledRef<>)))
             {
@@ -55,14 +62,20 @@ internal static class Serializer
         
     public static byte[] SerializedBytesToComponentBytes(Type type, byte[] serializedBytes)
     {
-        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         List<byte> result = [];
-        
         int index = 0;
-        foreach (var field in fields)
+        
+        //Read field count
+        int fieldCount = ReadInt(serializedBytes, ref index);
+        for (int i = 0; i < fieldCount; i++)
         {
+            var fieldNameLength = ReadInt(serializedBytes, ref index);
+            var fieldName = JsonSerializer.Deserialize<string>(Read(serializedBytes, fieldNameLength, ref index));
+            var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            //TODO some sort of diagnostics system instead of exceptions
+            if (field == null) throw new MissingFieldException(type.Name, fieldName);
+            
             Type fieldType = field.FieldType;
-
             if (!fieldType.GenericDefinitionEquals(typeof(PooledRef<>)))
             {
                 result.AddRange(Read(serializedBytes, Marshal.SizeOf(fieldType), ref index));
