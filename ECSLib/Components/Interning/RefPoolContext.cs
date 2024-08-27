@@ -11,7 +11,7 @@ public static class RefPoolContext
 {
     public class Context
     {
-        private readonly List<Action> _unregisterCallbacks = [];
+        private readonly List<(int id, Action<int> releaseAction)> _unregisterIds = [];
 
         public readonly Entity Entity;
         
@@ -28,13 +28,13 @@ public static class RefPoolContext
             if (entity != Entity) return;
 
             World.OnEntityDestroyed -= OnEntityDestroyed;
-            foreach (var callback in _unregisterCallbacks)
+            foreach (var (id, releaseAction) in _unregisterIds)
             {
-                callback();
+                releaseAction(id);
             }
         }
 
-        public void AddUnregisterCallback(Action action) => _unregisterCallbacks.Add(action);
+        public void RegisterReleaseId(int id, Action<int> releaseAction) => _unregisterIds.Add((id, releaseAction));
     }
 
     public static Context? CurrentContext { get; private set; }
