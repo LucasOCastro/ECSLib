@@ -30,17 +30,15 @@ internal static class Serializer
         foreach (var field in fields)
         {
             Type fieldType = field.FieldType;
-            var fieldBytes = Read(componentBytes, Marshal.SizeOf(fieldType), ref index);
-
             if (!fieldType.GenericDefinitionEquals(typeof(PooledRef<>)))
             {
-                result.AddRange(fieldBytes);
+                result.AddRange(Read(componentBytes, Marshal.SizeOf(fieldType), ref index));
                 continue;
             }
             
             //If is pooled, retrieve the object itself and write its length + data into the serialized bytes
             Type containedType = fieldType.GenericTypeArguments[0];
-            int id = BitConverter.ToInt32(fieldBytes);
+            int id = ReadInt(componentBytes, ref index);
             var getMethod = typeof(RefPool<>).MakeGenericType(containedType).GetMethod(
                 nameof(RefPool<object>.Get),
                 BindingFlags.Static | BindingFlags.Public, 
@@ -74,9 +72,9 @@ internal static class Serializer
             //If is Pooled, deserialize the object and Register, then write the ID to the component bytes
             int readSize = ReadInt(serializedBytes, ref index);
             var readBytes = Read(serializedBytes, readSize, ref index);
-            var pooledObject = JsonSerializer.Deserialize(readBytes, fieldType, JsonOptions);
-            
             Type containedType = fieldType.GenericTypeArguments[0];
+            var pooledObject = JsonSerializer.Deserialize(readBytes, containedType, JsonOptions);
+            
             var registerMethod = typeof(RefPool<>).MakeGenericType(containedType).GetMethod(
                 nameof(RefPool<object>.Register),
                 BindingFlags.Static | BindingFlags.Public,
