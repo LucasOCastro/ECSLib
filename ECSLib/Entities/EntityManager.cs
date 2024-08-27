@@ -12,6 +12,9 @@ internal class EntityManager
     /// </summary>
     private readonly List<int> _generations = [];
 
+
+    public IEnumerable<Entity> AllEntities => _generations.Select((t, i) => new Entity(i, t));
+
     private int GetNextId() => _freedIds.TryDequeue(out int index) ? index : _generations.Count;
     
     public Entity CreateEntity()

@@ -39,6 +39,17 @@ public sealed partial class ECS
         if (registerSystemsViaReflection)
             _systemManager.RegisterAllSystems(Assembly.GetCallingAssembly());
     }
+
+    /// <summary>
+    /// Destroys all entities, freeing up space and emptying the RefPool. 
+    /// </summary>
+    public void Clear()
+    {
+        foreach (var entity in _entityManager.AllEntities.ToList())
+        {
+            DestroyEntity(entity);
+        }
+    }
     
     #region ENTITIES
 
