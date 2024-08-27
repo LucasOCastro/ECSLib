@@ -104,8 +104,12 @@ internal class ComponentCollectionSet
             }
         }
     }
-
-    public Dictionary<Type, byte[]> GetAllComponents() => _typeToComponents;
+    
+    public ArraySegment<byte> GetComponentSegment(int index, Type type)
+    {
+        int size = Marshal.SizeOf(type);
+        return new(_typeToComponents[type], index * size, size);
+    }
 
     public void SetData(Type type, byte[] data, int index)
     {
