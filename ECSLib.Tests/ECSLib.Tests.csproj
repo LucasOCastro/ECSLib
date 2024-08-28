@@ -36,4 +36,16 @@
                           OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="SaveSystem\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="SaveSystem\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="SaveSystem\**" />
+    </ItemGroup>
+
 </Project>

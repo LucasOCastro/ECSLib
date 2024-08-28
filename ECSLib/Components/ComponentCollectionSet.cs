@@ -104,4 +104,17 @@ internal class ComponentCollectionSet
             }
         }
     }
+    
+    public ArraySegment<byte> GetComponentSegment(int index, Type type)
+    {
+        int size = Marshal.SizeOf(type);
+        return new(_typeToComponents[type], index * size, size);
+    }
+
+    public void SetData(Type type, byte[] data, int index)
+    {
+        var arr = _typeToComponents[type];
+        for (int i = 0; i < data.Length; i++)
+            arr[index + i] = data[i];
+    }
 }

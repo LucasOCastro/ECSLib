@@ -32,7 +32,7 @@ namespace ECSLib.Components.Interning;
         
         int id = ReleasedIds.Count > 0 ? ReleasedIds.Dequeue() : _currentId++;
         Pool.Add(id, value);
-        RefPoolContext.CurrentContext.AddUnregisterCallback(() => Release(id));
+        RefPoolContext.CurrentContext.RegisterReleaseId(id, Release);
         return id;
     }
     
