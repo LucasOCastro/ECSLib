@@ -18,7 +18,7 @@ internal class TextValueEmitter : IValueEmitter
         var constructorParser = StringParserManager.TryGetConstructorParserForType(type);
         if (constructorParser != null)
         {
-            var parsed = constructorParser.Parse(_text, type);
+            var parsed = constructorParser(_text, type);
             new StructValueEmitter(parsed).Emit(il, type);
             return;
         }
