@@ -269,9 +269,9 @@ An entity definition can be constructed as following. The Definition name should
 
 Fields not written in the XML will have their values set to the default stablished in C#.
 
-Collections have their items enumerated with <li> tags.
+Collections have their items enumerated with `<li>` tags.
 
-Dictionaries have <li> items, each with a <key> and <value> pair.
+Dictionaries have `<li>` items, each with a <key> and <value> pair.
 
 Boolean fields written as an empty open/close tag (`<MyBool/>`) will be parsed as true.
 
