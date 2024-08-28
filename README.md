@@ -188,13 +188,45 @@ world.AddComponent<MyCompWithRefs>(e);
 RefPoolContext.EndContext(e, world);
 ```
 
-# XML Deserialization
+# World State Serialization
+The entire ECS World state can be serialized into a binary file using the static `ECSLib.Binary.ECSSerializer` class:
+
+```cs
+using (var stream = File.Open(SaveFilePath, FileMode.Create))
+{
+    using (BinaryWriter writer = new(stream))
+    {
+        ECSSerializer.WriteWorldToBytes(ecs, writer);
+    }
+}
+```
+
+You can fill an ECS world from the data in the binary file:
+
+```cs
+using (var stream = File.OpenRead(SaveFilePath))
+{
+    using (BinaryReader reader = new(stream))
+    {
+        ECSSerializer.ReadWorldFromBytes(ecs, reader);
+    }
+}
+```
+
+Fields in binary files are serialized by field name. If a field is renamed and you want to avoid breaking old saved states, you can tag it with `LegacyNameAttribute` so the old name is also recognized.
+
+```cs
+[LegacyName("Number", "Valu", "WrongOldName")]
+public float Value;
+```
+
+# XML Archetype Definitions
 Entity archetypes can be defined in XML, including initial values for fields, using the ECSLib.XML package.
 XML definitions are deserialized into EntityFactory delegates, which can be accessed in the `ECSLib.XML.EntityFactoryRegistry` class.
 The delgates are generated using DynamicMethods.
 
 ## XML Structure
-Give the components in C#:
+Given the components in C#:
 ```cs
 namespace Namespace.Qualified;
 
@@ -212,7 +244,7 @@ public struct MyFlagComponent
 }
 ```
 
-An entity can be constructed as following. The Entity name should be **UNIQUE** amongst all other entity definitons. 
+An entity definition can be constructed as following. The Definition name should be **UNIQUE** amongst all other entity definitons. 
 ```xml
 <Defs>
     <MyEntityName>
