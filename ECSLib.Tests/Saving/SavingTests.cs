@@ -8,6 +8,13 @@ namespace ECSLib.Tests.Saving;
 public class SavingTests
 {
     private const string SaveFilePath = "TestSave.data";
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (File.Exists(SaveFilePath))
+            File.Delete(SaveFilePath);
+    }
     
     [Test]
     public void SavingTest()
@@ -33,8 +40,6 @@ public class SavingTests
                 Assert.DoesNotThrow(() => ECSSerializer.ReadWorldFromBytes(after, reader));
         AssertWorld(after);
         after.Clear();
-        
-        
     }
 
     private static void FillWorld(ECS world)
