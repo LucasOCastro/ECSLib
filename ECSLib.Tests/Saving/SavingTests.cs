@@ -16,21 +16,21 @@ public class SavingTests
         ECS before = new();
         FillWorld(before);
         AssertWorld(before);
-        using (FileStream stream = new(SaveFilePath, FileMode.Create))
+        using (var stream = File.Open(SaveFilePath, FileMode.Create))
         {
-            BinaryWriter writer = new(stream);
-            Assert.DoesNotThrow(() => ECSSerializer.WriteWorldToBytes(before, writer));
-            Console.WriteLine($"Save Data Size: {stream.Length}");
+            using (BinaryWriter writer = new(stream))
+            {
+                Assert.DoesNotThrow(() => ECSSerializer.WriteWorldToBytes(before, writer));
+                Console.WriteLine($"Save Data Size: {stream.Length}");
+            }
         }
         before.Clear();
         
         //Deserialize
         ECS after = new();
-        using (FileStream stream = new(SaveFilePath, FileMode.Open))
-        {
-            BinaryReader reader = new(stream);
-            Assert.DoesNotThrow(() => ECSSerializer.ReadWorldFromBytes(after, reader));
-        }
+        using (var stream = File.OpenRead(SaveFilePath))
+            using (BinaryReader reader = new(stream))
+                Assert.DoesNotThrow(() => ECSSerializer.ReadWorldFromBytes(after, reader));
         AssertWorld(after);
         after.Clear();
         
