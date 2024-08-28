@@ -10,7 +10,7 @@ public static class ECSSerializer
         //Entity count
         writer.Write(info.Count);
         //All Entities
-        foreach (var (entity, components) in info)
+        foreach (var (_, components) in info)
         {
             var componentList = components.ToList();
 

@@ -8,6 +8,8 @@ namespace ECSLib.Binary;
 
 internal static class Serializer
 {
+    
+    
     private static readonly JsonSerializerOptions JsonOptions = new() { IncludeFields = true };
     
     private static ArraySegment<byte> Read(byte[] bytes, int size, ref int index)
@@ -59,7 +61,13 @@ internal static class Serializer
 
         return result.ToArray();
     }
-        
+    
+    private static bool HasLegacyName(FieldInfo field, string name)
+    {
+        var attribute = field.GetCustomAttribute<LegacyNameAttribute>();
+        return attribute != null && attribute.LegacyNames.Contains(name);
+    }
+    
     public static byte[] SerializedBytesToComponentBytes(Type type, byte[] serializedBytes)
     {
         List<byte> result = [];
@@ -70,10 +78,10 @@ internal static class Serializer
         for (int i = 0; i < fieldCount; i++)
         {
             var fieldNameLength = ReadInt(serializedBytes, ref index);
-            var fieldName = JsonSerializer.Deserialize<string>(Read(serializedBytes, fieldNameLength, ref index));
-            var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            //TODO some sort of diagnostics system instead of exceptions
-            if (field == null) throw new MissingFieldException(type.Name, fieldName);
+            var fieldName = JsonSerializer.Deserialize<string>(Read(serializedBytes, fieldNameLength, ref index)) ?? "";
+            var field = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .FirstOrDefault(f => f.Name == fieldName || HasLegacyName(f, fieldName));
+            if (field == null) continue;
             
             Type fieldType = field.FieldType;
             if (!fieldType.GenericDefinitionEquals(typeof(PooledRef<>)))
