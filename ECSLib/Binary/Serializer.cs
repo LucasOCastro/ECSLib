@@ -31,7 +31,6 @@ internal static class Serializer
         int index = 0;
         foreach (var field in fields)
         {
-            //TODO then consider when fields are renamed - serialize by old names too
             //Write field name length and name
             var nameBytes = JsonSerializer.SerializeToUtf8Bytes(field.Name);
             var nameLengthBytes = BitConverter.GetBytes(nameBytes.Length);
